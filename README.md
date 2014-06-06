@@ -4,4 +4,4 @@ simpleml
 A simple machine learning library.
 
 Author:
-Roger Fan
+Roger Fan <rogerfan.rf@gmail.com>
