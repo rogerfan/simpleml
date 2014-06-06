@@ -62,19 +62,6 @@ def create_decision_tree(data, labels, min_obs_split=1, max_depth=None,
     return tree
 
 
-def classify_obs(obs, tree):
-    # Terminal condition
-    if tree.children is None:
-        return tree.majority
-
-    # Recursively go down the tree
-    var, split = tree.split
-    if obs[var] < split:
-        return classify_obs(obs, tree.children[0])
-    else:
-        return classify_obs(obs, tree.children[1])
-
-
 class DecisionNode:
     def __init__(self, majority, split=None, children=None, parent=None):
         self.split = split
@@ -93,6 +80,26 @@ class DecisionNode:
             for child in self.children:
                 ret += child.__str__(level+1)
         return ret
+
+    def classify_obs(self, obs):
+        # Terminal condition
+        if self.split is None:
+            return self.majority
+
+        # Recursively go down the tree
+        var, split = self.split
+        if obs[var] < split:
+            return self.children[0].classify_obs(obs)
+        else:
+            return self.children[1].classify_obs(obs)
+
+    def stumps(self):
+        if self.children is None:
+            return []
+        elif self.children[0].split is None and self.children[1].split is None:
+            return [self]
+        else:
+            return self.children[0].stumps() + self.children[1].stumps()
 
 
 class DecisionTree:
@@ -119,8 +126,8 @@ class DecisionTree:
     '''
     data = {}
     tree = None
+    pruned = False
     grow_params = None
-    _err = {'train': None, 'test': None}
 
     def __init__(self, train_data=None, train_labels=None,
                  test_data=None, test_labels=None,
@@ -149,7 +156,15 @@ class DecisionTree:
     def __str__(self):
         return self.tree.__str__()
 
-    def grow_tree(self, min_obs_split=1, max_depth=None, objfunc=objfunc.gini):
+    def copy(self):
+        from copy import deepcopy
+
+        args = self.data.copy()
+        args['tree'] = deepcopy(self.tree)
+
+        return DecisionTree(**args)
+
+    def grow(self, min_obs_split=1, max_depth=None, objfunc=objfunc.gini):
         '''
         Grow the decision tree using training data.
 
@@ -170,10 +185,6 @@ class DecisionTree:
             self.data['train_data'], self.data['train_labels'],
             min_obs_split=min_obs_split, max_depth=max_depth, objfunc=objfunc
         )
-
-        # Reset errors
-        self._err['train'] = None
-        if 'test' in self._err: self._err['test'] = None
 
         # Save parameters
         self.grow_params = {
@@ -197,14 +208,17 @@ class DecisionTree:
             raise AttributeError('Tree has not been grown yet.')
 
         if len(new_data.shape) == 1:
-            return classify_obs(new_data, self.tree)
+            return self.tree.classify_obs(new_data)
         else:
-            return np.array([classify_obs(obs, self.tree) for obs in new_data])
+            return np.array([self.tree.classify_obs(obs) for obs in new_data])
 
     def train_err(self):
         ''' Compute training error. '''
-        self._err['train'] = self._calc_error(errtype='train')
-        return self._err['train']
+        if 'train_data' not in self.data:
+            raise AttributeError('No training data provided.')
+
+        return np.mean(self.classify(self.data['train_data']) !=
+                       self.data['train_labels'])
 
     def test_err(self, data=None, labels=None):
         '''
@@ -220,17 +234,43 @@ class DecisionTree:
         if data is not None and labels is not None:
             return np.mean(self.classify(data) != labels)
 
-        self._err['test'] = self._calc_error(errtype='test')
-        return self._err['test']
+        if 'test_data' not in self.data:
+            raise AttributeError('No testing data provided.')
 
-    def _calc_error(self, errtype='train'):
-        if '{}_data'.format(errtype) not in self.data:
-            raise AttributeError('No {}ing data provided.'.format(errtype))
-        elif self._err[errtype] is not None:
-            return self._err[errtype]
+        return np.mean(self.classify(self.data['test_data']) !=
+                       self.data['test_labels'])
 
-        pred = self.classify(self.data['{}_data'.format(errtype)])
-        return np.mean(pred != self.data['{}_labels'.format(errtype)])
+    def prune(self):
+        if self.tree is None:
+            raise AttributeError('Tree has not been grown yet.')
 
+        already_considered = []
+        curr_err = self.test_err()
 
+        pruned_something = True
+        while pruned_something:
+            pruned_something = False
+
+            for stump in self.tree.stumps():
+                if stump in already_considered:
+                    continue
+
+                # Set split to none, save split in case we need to replace it
+                split = stump.split
+                stump.split = None
+
+                # Calculate new error after pruning the stump
+                new_err = self.test_err()
+
+                if new_err <= curr_err:
+                    # Prune the stump
+                    stump.children = None
+                    curr_err = new_err
+                    pruned_something = True
+                else:
+                    # Replace the stump
+                    stump.split = split
+                    already_considered.append(stump)
+
+        return self
 
