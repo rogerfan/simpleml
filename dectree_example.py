@@ -1,7 +1,5 @@
 '''
-Example of how to use the DecisionTree module.
-
-Author: Roger Fan
+Example of how to use the DecisionTree object in simpleml.
 '''
 import os
 import time

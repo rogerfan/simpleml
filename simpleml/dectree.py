@@ -1,7 +1,5 @@
 '''
 Implementation of Decision Trees.
-
-Author: Roger Fan
 '''
 import numpy as np
 

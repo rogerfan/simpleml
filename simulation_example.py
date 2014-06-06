@@ -1,7 +1,5 @@
 '''
 Example of how to simulate data using numpy.
-
-Author: Roger Fan
 '''
 import time
 import os
