@@ -2,7 +2,6 @@
 Example of how to simulate data using numpy.
 '''
 import time
-import os
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -47,12 +46,12 @@ def interactions_contr(level, x_data, scale=1.):
 
 
 # %cd C:/Users/g1rxf01/Documents/Data/other/New folder/simpleml
-os.chdir("C:/Users/g1rxf01/Documents/Data/other/New folder/simpleml")
+# %cd M:/Libraries/Documents/Code/Python/simpleml
 
 obs_num = 50000
 var_num = 50
 np.random.seed(452345)
-start = time.time()
+start = time.clock()
 print("Simulating {} observations with {} independent variables".format(
     obs_num, var_num
 ))
@@ -85,7 +84,7 @@ y_data = (y_data - np.mean(y_data)) / np.std(y_data)
 # y_class = np.floor(y_data) % 2 == 0
 y_class = y_data >= 0
 
-print('Simulation took {:.2f} seconds.'.format(time.time() - start))
+print('Simulation took {:.2f} seconds.'.format(time.clock() - start))
 
 # Some visualizations
 plt.scatter(x_data[:,0], y_data, c=y_class)

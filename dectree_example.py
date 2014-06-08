@@ -1,14 +1,13 @@
 '''
 Example of how to use the DecisionTree object in simpleml.
 '''
-import os
 import time
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 # %cd C:/Users/g1rxf01/Documents/Data/other/New folder/simpleml
-os.chdir("C:/Users/g1rxf01/Documents/Data/other/New folder/simpleml")
+# %cd M:/Libraries/Documents/Code/Python/simpleml
 
 from simpleml import DecisionTree
 
