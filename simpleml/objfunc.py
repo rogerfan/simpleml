@@ -10,7 +10,7 @@ def entropy(labels):
     if prop == 0 or prop == 1:
         return 0.
     else:
-        return -prop*np.log(prop) - (1-prop)*np.log((1-prop))
+        return -prop*np.log(prop) - (1-prop)*np.log(1-prop)
 
 def gini(labels):
     prop = np.mean(labels)
