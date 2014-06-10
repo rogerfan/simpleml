@@ -4,7 +4,7 @@ Objective functions.
 import numpy as np
 
 
-# Purity measures
+# Purity measures for binary variables.
 def entropy(labels):
     prop = np.mean(labels)
     if prop == 0 or prop == 1:

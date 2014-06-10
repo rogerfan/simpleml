@@ -3,7 +3,7 @@ Implementation of Decision Trees.
 '''
 import numpy as np
 
-from . import objfunc
+from . import metrics
 
 
 def _choose_split(data, labels, objfunc):
@@ -22,8 +22,8 @@ def _choose_split(data, labels, objfunc):
     return min_split
 
 
-def create_decision_tree(data, labels, min_obs_split=1, max_depth=None,
-                         objfunc=objfunc.gini):
+def _create_decision_tree(data, labels, min_obs_split=1, max_depth=None,
+                         objfunc=metrics.gini):
 
     if max_depth is None:
         max_depth = np.inf
@@ -35,21 +35,21 @@ def create_decision_tree(data, labels, min_obs_split=1, max_depth=None,
     if (  len(labels) < min_obs_split or  # Leaf size condition
           max_depth == 0 or               # Reached max depth
           prop == 0 or prop == 1 ):       # Homogenous branch
-        return DecisionNode(majority=majority)
+        return _DecisionNode(majority=majority)
 
     # Find best split
     split = _choose_split(data, labels, objfunc)
     cond = data[:, split[0]] < split[1]
 
     # Build recursively defined tree
-    tree = DecisionNode(
+    tree = _DecisionNode(
         majority, split=split,
         children=[
-            create_decision_tree(
+            _create_decision_tree(
                 data[cond], labels[cond],
                 min_obs_split, max_depth-1, objfunc=objfunc
             ),
-            create_decision_tree(
+            _create_decision_tree(
                 data[np.logical_not(cond)], labels[np.logical_not(cond)],
                 min_obs_split, max_depth-1, objfunc=objfunc
             )
@@ -60,7 +60,7 @@ def create_decision_tree(data, labels, min_obs_split=1, max_depth=None,
     return tree
 
 
-class DecisionNode:
+class _DecisionNode:
     def __init__(self, majority, split=None, children=None, parent=None):
         self.split = split
         self.majority = majority
@@ -102,7 +102,7 @@ class DecisionNode:
 
 class DecisionTree:
     '''
-    Decision Tree implementation.
+    Decision Tree.
 
     Parameters
     ----------
@@ -110,26 +110,26 @@ class DecisionTree:
         Independent data and labels for training.
     test_data, test_labels : ndarray [None, None]
         Independent data and labels for testing.
-    test : DecisionNode [None]
+    test : _DecisionNode [None]
         Already grown tree.
 
     Attributes
     ----------
     data : dict
         Contains training and test data if provided.
-    tree : DecisionNode
+    tree : _DecisionNode
         Contains the tree once it is grown
     grow_params : dict
         Contains parameters used for growing tree.
     '''
-    data = {}
-    tree = None
-    pruned = False
-    grow_params = None
-
     def __init__(self, train_data=None, train_labels=None,
                  test_data=None, test_labels=None,
                  tree=None):
+
+        self.data = {}
+        self.tree = None
+        self.pruned = False
+        self.grow_params = None
 
         def check_dim(data, labels):
             assert(len(data) == len(labels))
@@ -162,7 +162,7 @@ class DecisionTree:
 
         return DecisionTree(**args)
 
-    def grow(self, min_obs_split=1, max_depth=None, objfunc=objfunc.gini):
+    def grow(self, min_obs_split=1, max_depth=None, objfunc=metrics.gini):
         '''
         Grow the decision tree using training data.
 
@@ -172,14 +172,14 @@ class DecisionTree:
             Nodes with sizes less than this will not be split further.
         max_depth : int [None]
             Maximum depth to grow the tree to.
-        objfunc : function [objfunc.gini]
+        objfunc : function [metrics.gini]
             Objective function to minimize when selecting splits.
         '''
         if max_depth is None:
             max_depth = np.inf
 
         # Grow tree
-        self.tree = create_decision_tree(
+        self.tree = _create_decision_tree(
             self.data['train_data'], self.data['train_labels'],
             min_obs_split=min_obs_split, max_depth=max_depth, objfunc=objfunc
         )

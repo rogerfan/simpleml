@@ -5,24 +5,25 @@ import time
 
 import numpy as np
 import matplotlib.pyplot as plt
+import statsmodels.api as sm
 
 # %cd C:/Users/g1rxf01/Documents/Data/other/New folder/simpleml
 # %cd M:/Libraries/Documents/Code/Python/simpleml
 
-from simpleml import DecisionTree
+from simpleml.dectree import DecisionTree
+from simpleml.transform import PCA
 
 # Load data
 x_data = np.loadtxt('x_data.txt')
 y_class = np.loadtxt('y_class.txt', dtype=int)
 
-
+# Using untransformed data
 x_train = x_data[:5000]
 y_train = y_class[:5000]
 x_cv    = x_data[5000:6000]
 y_cv    = y_class[5000:6000]
 x_test  = x_data[6000:11000]
 y_test  = y_class[6000:11000]
-
 
 tree = DecisionTree(x_train, y_train,
                     test_data=x_cv, test_labels=y_cv)
@@ -49,18 +50,14 @@ for i in range(20):
 
     print(i, time.clock() - start)
 
+logit = sm.Logit(y_train, x_train)
+logit_result = logit.fit()
+pred = logit_result.predict(x_test)
+logit_testerr = 1 - np.mean(np.round(pred) == y_test)
 
 
-
-
-def pca(num_comp, X):
-    from scipy.linalg import svd
-    X_std = (X - X.mean(axis=0)) / X.std(axis=0)
-    U, S, V = svd(X_std, full_matrices=False)
-    return np.dot(X, V[:num_comp].T)
-
-
-x_data_pca = pca(50, x_data[:11000])
+# Using PCA with all components
+x_data_pca = PCA(x_data[:11000], 50).fit().transform()
 x_train = x_data_pca[:5000]
 x_cv    = x_data_pca[5000:6000]
 x_test  = x_data_pca[6000:11000]
@@ -91,7 +88,8 @@ for i in range(20):
     print(i, time.clock() - start)
 
 
-x_data_pca = pca(10, x_data[:11000])
+# Using PCA with 10 components
+x_data_pca = PCA(x_data[:11000], 10).fit().transform()
 x_train = x_data_pca[:5000]
 x_cv    = x_data_pca[5000:6000]
 x_test  = x_data_pca[6000:11000]
@@ -121,29 +119,47 @@ for i in range(20):
 
     print(i, time.clock() - start)
 
+logit = sm.Logit(y_train, x_train)
+logit_result = logit.fit()
+pred = logit_result.predict(x_test)
+logit_pca1_testerr = 1 - np.mean(np.round(pred) == y_test)
 
 
+# Plotting
+fig1 = plt.figure(figsize=(8, 11))
+ax1 = fig1.add_subplot(3, 1, 1)
+ax1.plot(res['depth'], res['train_err'], label='Train, Unpruned')
+ax1.plot(res['depth'], res['train_err_prune'], label='Train, Pruned')
+ax1.plot(res['depth'], res['test_err'], label='Test, Unpruned')
+ax1.plot(res['depth'], res['test_err_prune'], label='Test, Pruned')
+ax1.axhline(logit_testerr, color='darkgrey', label='Test, Logit')
+ax1.set_title('Untransformed')
 
+ax2 = fig1.add_subplot(3, 1, 2)
+ax2.plot(res_pca['depth'], res_pca['train_err'], label='Train, Unpruned')
+ax2.plot(res_pca['depth'], res_pca['train_err_prune'], label='Train, Pruned')
+ax2.plot(res_pca['depth'], res_pca['test_err'], label='Test, Unpruned')
+ax2.plot(res_pca['depth'], res_pca['test_err_prune'], label='Test, Pruned')
+ax2.axhline(logit_testerr, color='darkgrey', label='Test, Logit')
+ax2.legend(bbox_to_anchor=(1.05, .5), loc='center left', borderaxespad=0.)
+ax2.set_title('All PC')
 
+ax3 = fig1.add_subplot(3, 1, 3)
+ax3.plot(res_pca1['depth'], res_pca1['train_err'], label='Train, Unpruned')
+ax3.plot(res_pca1['depth'], res_pca1['train_err_prune'], label='Train, Pruned')
+ax3.plot(res_pca1['depth'], res_pca1['test_err'], label='Test, Unpruned')
+ax3.plot(res_pca1['depth'], res_pca1['test_err_prune'], label='Test, Pruned')
+ax3.axhline(logit_pca1_testerr, color='darkgrey', label='Test, Logit')
+ax3.set_title('10 PC')
 
-plt.plot(res['depth'], res['train_err'], label='Train, Unpruned')
-plt.plot(res['depth'], res['train_err_prune'], label='Train, Pruned')
-plt.plot(res['depth'], res['test_err'], label='Test, Unpruned')
-plt.plot(res['depth'], res['test_err_prune'], label='Test, Pruned')
-plt.legend(loc='upper right')
-plt.show()
+fig2 = plt.figure(figsize=(8, 4))
+ax1 = fig2.add_subplot(1, 1, 1)
+ax1.plot(res['depth'], res['test_err_prune'], label='Untransformed')
+ax1.plot(res_pca['depth'], res_pca['test_err_prune'], label='All PC')
+ax1.plot(res_pca1['depth'], res_pca1['test_err_prune'], label='10 PC')
+ax1.axhline(logit_testerr, color='darkgrey', label='Logit')
+ax1.axhline(logit_pca1_testerr, color='darkgrey', linestyle='--', label='Logit, 10 PC')
+ax1.legend(loc='upper right')
+ax1.set_title('Test Error, Pruned Trees')
 
-plt.plot(res_pca['depth'], res_pca['train_err'], label='Train, Unpruned')
-plt.plot(res_pca['depth'], res_pca['train_err_prune'], label='Train, Pruned')
-plt.plot(res_pca['depth'], res_pca['test_err'], label='Test, Unpruned')
-plt.plot(res_pca['depth'], res_pca['test_err_prune'], label='Test, Pruned')
-plt.legend(loc='upper right')
-plt.show()
-
-
-plt.plot(res_pca1['depth'], res_pca1['train_err'], label='Train, Unpruned')
-plt.plot(res_pca1['depth'], res_pca1['train_err_prune'], label='Train, Pruned')
-plt.plot(res_pca1['depth'], res_pca1['test_err'], label='Test, Unpruned')
-plt.plot(res_pca1['depth'], res_pca1['test_err_prune'], label='Test, Pruned')
-plt.legend(loc='upper right')
 plt.show()
