@@ -1,5 +1,5 @@
 '''
-Objective functions.
+Metric functions.
 '''
 import numpy as np
 

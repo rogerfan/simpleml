@@ -1,5 +1,5 @@
 '''
-Implementation of Decision Trees.
+Decision Trees.
 '''
 import numpy as np
 

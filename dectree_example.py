@@ -1,5 +1,5 @@
 '''
-Example of how to use the DecisionTree object in simpleml.
+Example of how to use Decision Trees and PCA in simpleml.
 '''
 import time
 
