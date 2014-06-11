@@ -1,5 +1,5 @@
 '''
-Data transformations.
+Data transformations. These are used for stuff.
 '''
 import numpy as np
 from scipy.linalg import svd
