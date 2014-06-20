@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
 
-# %cd C:/Users/g1rxf01/Documents/Data/other/New folder/simpleml
+# %cd C:/Users/g1rxf01/Downloads/New folder/simpleml
 # %cd M:/Libraries/Documents/Code/Python/simpleml
 
 from simpleml.dectree import DecisionTree

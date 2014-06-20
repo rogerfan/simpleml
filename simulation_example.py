@@ -45,7 +45,7 @@ def interactions_contr(level, x_data, scale=1.):
     return inter_contr
 
 
-# %cd C:/Users/g1rxf01/Documents/Data/other/New folder/simpleml
+# %cd C:/Users/g1rxf01/Downloads/New folder/simpleml
 # %cd M:/Libraries/Documents/Code/Python/simpleml
 
 obs_num = 50000
