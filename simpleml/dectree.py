@@ -22,44 +22,6 @@ def _choose_split(data, labels, objfunc):
     return min_split
 
 
-def _create_decision_tree(data, labels, min_obs_split=1, max_depth=None,
-                         objfunc=metrics.gini):
-
-    if max_depth is None:
-        max_depth = np.inf
-
-    prop = np.mean(labels)
-    majority = int(np.round(prop))
-
-    # Terminal conditions
-    if (  len(labels) < min_obs_split or  # Leaf size condition
-          max_depth == 0 or               # Reached max depth
-          prop == 0 or prop == 1 ):       # Homogenous branch
-        return _DecisionNode(majority=majority)
-
-    # Find best split
-    split = _choose_split(data, labels, objfunc)
-    cond = data[:, split[0]] < split[1]
-
-    # Build recursively defined tree
-    tree = _DecisionNode(
-        majority, split=split,
-        children=[
-            _create_decision_tree(
-                data[cond], labels[cond],
-                min_obs_split, max_depth-1, objfunc=objfunc
-            ),
-            _create_decision_tree(
-                data[np.logical_not(cond)], labels[np.logical_not(cond)],
-                min_obs_split, max_depth-1, objfunc=objfunc
-            )
-        ]
-    )
-    for child in tree.children:
-        child.parent = tree
-    return tree
-
-
 class _DecisionNode:
     def __init__(self, majority, split=None, children=None, parent=None):
         self.split = split
@@ -98,6 +60,68 @@ class _DecisionNode:
             return [self]
         else:
             return self.children[0].stumps() + self.children[1].stumps()
+
+    def descendents(self):
+        desc_list = [self]
+        if self.split is not None:
+            for i in range(2):
+                desc_list += self.children[i].descendents()
+        return desc_list
+
+
+def _create_decision_tree(data, labels, min_obs_split=1, max_depth=None,
+                          objfunc=metrics.gini):
+
+    if max_depth is None:
+        max_depth = np.inf
+
+    prop = np.mean(labels)
+    majority = int(np.round(prop))
+
+    # Terminal conditions
+    if (  len(labels) < min_obs_split or  # Leaf size condition
+          max_depth == 0 or               # Reached max depth
+          prop == 0 or prop == 1 ):       # Homogenous branch
+        return _DecisionNode(majority=majority)
+
+    # Find best split
+    split = _choose_split(data, labels, objfunc)
+    cond = data[:, split[0]] < split[1]
+
+    # Build recursively defined tree
+    tree = _DecisionNode(
+        majority, split=split,
+        children=[
+            _create_decision_tree(
+                data[cond], labels[cond],
+                min_obs_split, max_depth-1, objfunc=objfunc
+            ),
+            _create_decision_tree(
+                data[np.logical_not(cond)], labels[np.logical_not(cond)],
+                min_obs_split, max_depth-1, objfunc=objfunc
+            )
+        ]
+    )
+    for child in tree.children:
+        child.parent = tree
+    return tree
+
+
+def data_at_node(curr_node, target_node, data):
+
+    if curr_node is target_node:
+        return data
+    if curr_node.split is None:
+        return None
+
+    var, split = curr_node.split
+    result = data_at_node(curr_node.children[0], target_node,
+                          data[data[:,var] < split])
+    if result is None:
+        result = data_at_node(curr_node.children[1], target_node,
+                              data[data[:,var] >= split])
+
+    return result
 
 
 class DecisionTree:
