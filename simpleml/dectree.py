@@ -22,7 +22,7 @@ def _choose_split(data, labels, objfunc):
     return min_split
 
 
-class _DecisionNode:
+class DecisionNode:
     def __init__(self, majority, split=None, children=None, parent=None):
         self.split = split
         self.majority = majority
@@ -76,7 +76,7 @@ class _DecisionNode:
                     self.children[1].num_nodes())
 
 
-def _create_decision_tree(data, labels, min_obs_split=1, max_depth=None,
+def create_decision_node(data, labels, min_obs_split=1, max_depth=None,
                           objfunc=metrics.gini):
 
     if max_depth is None:
@@ -89,21 +89,21 @@ def _create_decision_tree(data, labels, min_obs_split=1, max_depth=None,
     if (  len(labels) < min_obs_split or  # Leaf size condition
           max_depth == 0 or               # Reached max depth
           prop == 0 or prop == 1 ):       # Homogenous branch
-        return _DecisionNode(majority=majority)
+        return DecisionNode(majority=majority)
 
     # Find best split
     split = _choose_split(data, labels, objfunc)
     cond = data[:, split[0]] < split[1]
 
     # Build recursively defined tree
-    tree = _DecisionNode(
+    tree = DecisionNode(
         majority, split=split,
         children=[
-            _create_decision_tree(
+            create_decision_node(
                 data[cond], labels[cond],
                 min_obs_split, max_depth-1, objfunc=objfunc
             ),
-            _create_decision_tree(
+            create_decision_node(
                 data[np.logical_not(cond)], labels[np.logical_not(cond)],
                 min_obs_split, max_depth-1, objfunc=objfunc
             )
@@ -141,14 +141,14 @@ class DecisionTree:
         Independent data and labels for training.
     test_data, test_labels : ndarray [None, None]
         Independent data and labels for testing.
-    test : _DecisionNode [None]
+    test : DecisionNode [None]
         Already grown tree.
 
     Attributes
     ----------
     data : dict
         Contains training and test data if provided.
-    tree : _DecisionNode
+    tree : DecisionNode
         Contains the tree once it is grown
     grow_params : dict
         Contains parameters used for growing tree.
@@ -210,7 +210,7 @@ class DecisionTree:
             max_depth = np.inf
 
         # Grow tree
-        self.tree = _create_decision_tree(
+        self.tree = create_decision_node(
             self.data['train_data'], self.data['train_labels'],
             min_obs_split=min_obs_split, max_depth=max_depth, objfunc=objfunc
         )
