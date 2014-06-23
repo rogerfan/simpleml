@@ -5,7 +5,7 @@ import simpleml.dectree as dt
 
 
 X_TRAIN = np.array([
-    [-1.4273, -1.0824,  0.7958],
+    [-1.4273, -1.0824,  0.0058],
     [ 0.7866, -0.3452, -0.5211],
     [ 1.1191,  0.0517, -1.1401],
     [ 1.6514,  0.2658,  0.4943],
@@ -55,13 +55,13 @@ X_TEST = np.array([
 ])
 
 LABELS_TEST = np.array(
-    [1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1]
+    [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1]
 )
 
 
-class TestEasyTree:
+class TestEasyNode:
     def setup(self):
-        self.x =  X_TRAIN
+        self.x =  X_TRAIN.copy()
         self.labels = LABELS_TRAIN
 
         self.x[:,2] = np.abs(self.x[:,2]) * (-1+2*self.labels)
@@ -89,7 +89,15 @@ class TestEasyTree:
         tree = dt._create_decision_tree(self.x, self.labels, max_depth=0)
         assert tree.split is None
 
-    def test_tree_descendents(self):
+    def test_num_nodes(self):
+        tree = dt._create_decision_tree(self.x, self.labels)
+        assert tree.num_nodes() == 3
+
+    def test_num_nodes1(self):
+        tree = dt._create_decision_tree(self.x, self.labels, max_depth=0)
+        assert tree.num_nodes() == 1
+
+    def test_descendents(self):
         tree = dt._create_decision_tree(self.x, self.labels)
         assert len(tree.descendents()) == 3
         assert tree in tree.descendents()
@@ -122,7 +130,7 @@ class TestEasyTree:
         assert(len(tree.stumps()) == 0)
 
 
-class TestTree:
+class TestNode:
     def test_tree_print(self):
         tree = dt._create_decision_tree(X_TRAIN, LABELS_TRAIN)
         print(tree)
@@ -145,6 +153,12 @@ class TestTree:
         tree = dt._create_decision_tree(X_TRAIN, LABELS_TRAIN)
         for obs, label in zip(X_TRAIN, LABELS_TRAIN):
             assert tree.classify_obs(obs) == label
+
+    def test_num_nodes_min_split(self):
+        tree_minobs0  = dt._create_decision_tree(X_TRAIN, LABELS_TRAIN)
+        tree_minobs10 = dt._create_decision_tree(X_TRAIN, LABELS_TRAIN,
+                                                 min_obs_split=10)
+        assert tree_minobs0.num_nodes() > tree_minobs10.num_nodes()
 
 
 class TestDecisionTreeInit:
@@ -192,11 +206,60 @@ class TestDecisionTreeGrowClassify:
         assert(self.dtree.grow_params['min_obs_split'] == min_obs_new)
         assert(self.dtree.grow_params['max_depth'] == np.inf)
 
-
     def test_classify(self):
         self.dtree.grow()
         assert np.all(self.dtree.classify(X_TRAIN) == LABELS_TRAIN)
         assert np.all(self.dtree.classify(X_TRAIN[5]) == LABELS_TRAIN[5])
+
+
+class TestEasyDecisionTreeError:
+    def setup(self):
+        self.x_train =  X_TRAIN.copy()
+        self.labels_train = LABELS_TRAIN
+        self.x_test =  X_TEST.copy()
+        self.labels_test = LABELS_TEST
+
+        self.x_train[:,2] = np.abs(self.x_train[:,2]) * (-1+2*self.labels_train)
+        self.x_test[:,2]  = np.abs(self.x_test[:,2])  * (-1+2*self.labels_test)
+
+        self.dtree = dt.DecisionTree(
+            train_data=self.x_train, train_labels=self.labels_train,
+            test_data=self.x_test, test_labels=self.labels_test,
+        )
+
+        self.dtree.grow()
+
+    def test_train_err(self):
+        assert self.dtree.train_err() == 0
+
+    def test_test_err(self):
+        assert self.dtree.test_err() == 0
+
+    def test_test_err_newdata(self):
+        assert self.dtree.test_err(X_TRAIN, LABELS_TRAIN) < 1
+
+
+class TestDecisionTreePrune:
+    def setup(self):
+        self.dtree = dt.DecisionTree(
+            train_data=X_TRAIN, train_labels=LABELS_TRAIN,
+            test_data=X_TEST, test_labels=LABELS_TEST
+        )
+        self.dtree.grow()
+
+    def test_prune_err(self):
+        naive_test_err = self.dtree.test_err()
+        naive_train_err = self.dtree.train_err()
+        naive_num_nodes = self.dtree.tree.num_nodes()
+
+        self.dtree.prune()
+        pruned_test_err = self.dtree.test_err()
+        pruned_train_err = self.dtree.train_err()
+        pruned_num_nodes = self.dtree.tree.num_nodes()
+
+        assert pruned_test_err  < naive_test_err
+        assert pruned_train_err > naive_train_err
+        assert pruned_num_nodes < naive_num_nodes
 
 
 class TestDecisionTreeMissing:
@@ -239,26 +302,3 @@ class TestDecisionTreeMissing:
     @raises(AttributeError)
     def test_prune(self):
         self.dtree.prune()
-
-
-class TestDecisionTreeError:
-    def setup(self):
-        self.x_train =  X_TRAIN
-        self.labels_train = LABELS_TRAIN
-        self.x_test =  X_TEST
-        self.labels_test = LABELS_TEST
-
-        self.x_train[:,2] = np.abs(self.x_train[:,2]) * (-1+2*self.labels_train)
-        self.x_test[:,2]  = np.abs(self.x_test[:,2])  * (-1+2*self.labels_test)
-
-        self.dtree = dt.DecisionTree(
-            train_data=self.x_train, train_labels=self.labels_train,
-            test_data=self.x_test, test_labels=self.labels_test,
-        )
-
-        self.dtree.grow()
-
-    def test_train_err(self):
-        assert self.dtree.train_err() == 0
-
-
