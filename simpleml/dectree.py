@@ -68,6 +68,13 @@ class _DecisionNode:
                 desc_list += self.children[i].descendents()
         return desc_list
 
+    def num_nodes(self):
+        if self.split is None:
+            return 1
+        else:
+            return (1 + self.children[0].num_nodes() +
+                    self.children[1].num_nodes())
+
 
 def _create_decision_tree(data, labels, min_obs_split=1, max_depth=None,
                           objfunc=metrics.gini):
@@ -263,9 +270,6 @@ class DecisionTree:
                        self.data['test_labels'])
 
     def prune(self):
-        if self.tree is None:
-            raise AttributeError('Tree has not been grown yet.')
-
         already_considered = []
         curr_err = self.test_err()
 
