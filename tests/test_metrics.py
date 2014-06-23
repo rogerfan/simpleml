@@ -6,7 +6,7 @@ import simpleml.metrics as met
 class TestPurityHomogeneous:
     def setup(self):
         self.all0 = np.array([0 for i in range(5)])
-        self.all1 = np.array([1 for i in range(5)])
+        self.all1 = [1 for i in range(5)]
 
     def test_entropy(self):
         assert met.entropy(self.all0) == 0
@@ -38,7 +38,7 @@ class TestPurityDeriv:
     def setup(self):
         self.labels = [
             np.array([0, 0, 0, 0, 0]),
-            np.array([1, 0, 0, 0, 0]),
+            [1, 0, 0, 0, 0],
             np.array([1, 1, 0, 0, 0])
         ]
 
