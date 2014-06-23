@@ -66,16 +66,15 @@ class TestEasyNode:
 
         self.x[:,2] = np.abs(self.x[:,2]) * (-1+2*self.labels)
 
-    def test_choose_split(self):
-        from simpleml.metrics import gini
-        best_split = dt._choose_split(self.x, self.labels, gini)
+    def test_first_split(self):
+        tree = dt.create_decision_node(self.x, self.labels)
 
         x_sorted = np.sort(self.x[:,2])
         zero_ind = np.searchsorted(x_sorted, 0)
 
-        assert best_split[0] == 2
-        assert (best_split[1] == x_sorted[zero_ind] or
-                best_split[1] == x_sorted[zero_ind-1])
+        assert tree.split[0] == 2
+        assert (tree.split[1] == x_sorted[zero_ind] or
+                tree.split[1] == x_sorted[zero_ind-1])
 
     def test_create_tree(self):
         tree = dt.create_decision_node(self.x, self.labels)
