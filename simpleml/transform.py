@@ -33,13 +33,9 @@ class PCA:
         else:
             self.num_comp = num_comp
         self.X = X
-        self.Vt = None
 
-    def fit(self):
-        ''' Calculate the principle components. '''
-        U, S, Vt = svd(self.X, full_matrices=False)
+        U, S, Vt = svd(X, full_matrices=False)
         self.Vt = Vt
-        return self
 
     def transform(self, X=None, num_comp=None):
         ''' Apply dimensionality reduction.
@@ -67,7 +63,7 @@ class PCA:
         Parameters
         ----------
         X : ndarray [None]
-            X matrix to project. Will use the trainig data if not provided.
+            X matrix to project. Will use the training data if not provided.
         num_comp : ndarray [None]
             Number of principle components to use. If not provided, will use
             the number provided when initializing the PCA object.
@@ -83,8 +79,6 @@ class PCA:
                       self.Vt[:self.num_comp])
 
     def _check(self, X, num_comp):
-        if self.Vt is None:
-            raise AttributeError('Model not yet fit. Use fit() first.')
         if X is None:
             X = self.X
         if num_comp is None:

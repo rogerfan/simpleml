@@ -57,7 +57,7 @@ logit_testerr = 1 - np.mean(np.round(pred) == y_test)
 
 
 # Using PCA with all components
-x_data_pca = PCA(x_data[:11000], 50).fit().transform()
+x_data_pca = PCA(x_data[:11000], 50).transform()
 x_train = x_data_pca[:5000]
 x_cv    = x_data_pca[5000:6000]
 x_test  = x_data_pca[6000:11000]
@@ -89,7 +89,7 @@ for i in range(20):
 
 
 # Using PCA with 10 components
-x_data_pca = PCA(x_data[:11000], 10).fit().transform()
+x_data_pca = PCA(x_data[:11000], 10).transform()
 x_train = x_data_pca[:5000]
 x_cv    = x_data_pca[5000:6000]
 x_test  = x_data_pca[6000:11000]
