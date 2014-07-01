@@ -51,7 +51,7 @@ class PCA:
         else:
             if num_comp > min(X.shape):
                 raise ValueError("Number of components cannot be more than the"
-                                 "number of variables or obs.")
+                                 " number of variables or obs.")
             self.num_comp = num_comp
         self.X = X
 
@@ -59,7 +59,8 @@ class PCA:
         self.Vt = Vt
 
     def transform(self, X=None, num_comp=None):
-        ''' Apply dimensionality reduction.
+        '''
+        Apply dimensionality reduction.
 
         Parameters
         ----------
@@ -79,7 +80,8 @@ class PCA:
         return np.dot(X, self.Vt[:num_comp].T)
 
     def project(self, X=None, num_comp=None):
-        ''' Project onto the principle components.
+        '''
+        Project onto the principle components.
 
         Parameters
         ----------
@@ -106,7 +108,7 @@ class PCA:
             num_comp = self.num_comp
 
         if num_comp > min(self.X.shape):
-            raise ValueError("Number of components cannot be more than the"
+            raise ValueError("Number of components cannot be more than the "
                              "number of variables or obs in training data.")
 
         return X, num_comp
