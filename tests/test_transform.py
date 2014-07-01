@@ -85,6 +85,10 @@ class TestPCA:
     def test_project_allcomp_other(self):
         assert np.allclose(DATA2, tf.PCA(DATA1).project(DATA2))
 
+    def test_project_allcomp_vec(self):
+        vec = np.array([1, 2, 3, 4])
+        assert np.allclose(vec, tf.PCA(DATA1).project(vec))
+
     def test_project_shape1(self):
         data_proj = tf.PCA(DATA1, num_comp=2).project()
         assert data_proj.shape == DATA1.shape
@@ -104,6 +108,11 @@ class TestPCA:
     def test_transform_allcomp_other(self):
         data_trans = tf.PCA(DATA1).transform(DATA2)
         assert data_trans.shape == DATA2.shape
+
+    def test_transform_allcomp_vec(self):
+        vec = np.array([1, 2, 3, 4])
+        data_trans = tf.PCA(DATA1).transform(vec)
+        assert data_trans.shape == vec.shape
 
     def test_transform_shape1(self):
         data_trans = tf.PCA(DATA1, num_comp=2).transform()
