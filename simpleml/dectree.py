@@ -8,16 +8,31 @@ from . import metrics
 
 def _choose_split(data, labels, objfunc):
     min_obj = np.inf
+    obs_num = len(labels)
     for cand_var in range(data.shape[1]):
-        for cand_split in np.unique(data[:,cand_var])[1:]:
-            subset0 = labels[data[:,cand_var] <  cand_split]
-            subset1 = labels[data[:,cand_var] >= cand_split]
-            frac0 = len(subset0)/len(labels)
-            cand_obj = ( objfunc(subset0) * frac0 +
-                         objfunc(subset1) * (1-frac0) )
-            if cand_obj < min_obj:
-                min_obj = cand_obj
-                min_split = (cand_var, cand_split)
+        uniquelist = np.unique(data[:, cand_var])
+
+        if len(uniquelist) > obs_num*0.8:  # Continuous case
+            sorted_rows = data[:, cand_var].argsort()
+            labels_sorted = labels[sorted_rows]
+            for cand_split_num in range(1, obs_num):
+                frac0 = cand_split_num/obs_num
+                cand_obj = (objfunc(labels_sorted[:cand_split_num]) * frac0 +
+                            objfunc(labels_sorted[cand_split_num:]) * (1-frac0))
+                if cand_obj < min_obj:
+                    min_obj = cand_obj
+                    min_split = (cand_var,
+                                 data[sorted_rows[cand_split_num], cand_var])
+        else:  # Categorical case
+            for cand_split in uniquelist[1:]:
+                subset0 = labels[data[:,cand_var] <  cand_split]
+                subset1 = labels[data[:,cand_var] >= cand_split]
+                frac0 = len(subset0)/obs_num
+                cand_obj = ( objfunc(subset0) * frac0 +
+                             objfunc(subset1) * (1-frac0) )
+                if cand_obj < min_obj:
+                    min_obj = cand_obj
+                    min_split = (cand_var, cand_split)
 
     return min_split
 
