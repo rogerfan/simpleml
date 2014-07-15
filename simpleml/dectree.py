@@ -15,14 +15,21 @@ def _choose_split(data, labels, objfunc):
         if len(uniquelist) > obs_num*0.8:  # Continuous case
             sorted_rows = data[:, cand_var].argsort()
             labels_sorted = labels[sorted_rows]
-            for cand_split_num in range(1, obs_num):
-                frac0 = cand_split_num/obs_num
-                cand_obj = (objfunc(labels_sorted[:cand_split_num]) * frac0 +
-                            objfunc(labels_sorted[cand_split_num:]) * (1-frac0))
-                if cand_obj < min_obj:
-                    min_obj = cand_obj
-                    min_split = (cand_var,
-                                 data[sorted_rows[cand_split_num], cand_var])
+
+            nums_less = np.arange(1, obs_num)
+            fracs_less = nums_less/obs_num
+
+            props_less = (np.cumsum(labels_sorted)[:-1] / nums_less)
+            props_more = (np.cumsum(labels_sorted[::-1])[:-1] / nums_less)[::-1]
+
+            cand_objs = (objfunc(props_less) * fracs_less +
+                         objfunc(props_more) * (1-fracs_less))
+
+            min_cand_ind = np.argmin(cand_objs)
+            if cand_objs[min_cand_ind] < min_obj:
+                min_obj = cand_objs[min_cand_ind]
+                min_split = (cand_var,
+                             data[sorted_rows[min_cand_ind+1], cand_var])
         else:  # Categorical case
             for cand_split in uniquelist[1:]:
                 subset0 = labels[data[:,cand_var] <  cand_split]

@@ -2,24 +2,18 @@
 Metric functions.
 '''
 import numpy as np
-
+import numexpr as ne
 
 # Purity measures for binary variables.
-def entropy(labels):
-    prop = np.count_nonzero(labels) / len(labels)
-    if prop == 0 or prop == 1:
-        return 0.
-    else:
-        return -prop*np.log(prop) - (1-prop)*np.log(1-prop)
+def entropy(prop):
+    return ne.evaluate('where((prop != 0) & (prop != 1),'
+                       '-prop*log(prop) - (1-prop)*log(1-prop), 0)')
 
-def gini(labels):
-    prop = np.count_nonzero(labels) / len(labels)
+def gini(prop):
     return prop*(1-prop)
 
-def misclass(labels):
-    prop = np.count_nonzero(labels) / len(labels)
-    if np.round(prop) == 0:
-        return prop
-    else:
-        return 1-prop
-
+def misclass(prop):
+    if len(prop) <= 1000:
+        return np.where(prop <= 0.5, prop, 1-prop)
+    else:  # Numexpr becomes faster around here (tested on i7-3770)
+        return ne.evaluate('where(prop <= 0.5, prop, 1-prop)')
