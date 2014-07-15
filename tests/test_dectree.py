@@ -106,7 +106,7 @@ class TestEasyNode:
         for i in range(2):
             assert tree.children[i] in tree.descendents()
 
-    def test_data_at_note(self):
+    def test_data_at_node(self):
         tree = dt.create_decision_node(self.x, self.labels_train)
         assert np.all(
             self.x[self.x[:,2] < 0] == dt.data_at_node(tree, tree.children[0],
@@ -130,6 +130,11 @@ class TestEasyNode:
     def test_stumps_nodepth(self):
         tree = dt.create_decision_node(self.x, self.labels_train, max_depth=0)
         assert(len(tree.stumps()) == 0)
+
+class TestEasyNodeCat(TestEasyNode):
+    def setup(self):
+        self.x =  X_TRAIN.copy()
+        self.x[:,2] = -0.5 + self.labels_train
 
 
 class TestNode:
@@ -248,6 +253,20 @@ class TestEasyDecisionTreeError:
     def test_test_err_newdata(self):
         assert self.dtree.test_err(X_TRAIN, self.labels_train) < 1
 
+class TestEasyDecisionTreeErrorCat(TestEasyDecisionTreeError):
+    def setup(self):
+        self.x_train =  X_TRAIN.copy()
+        self.x_test =  X_TEST.copy()
+
+        self.x_train[:,2] = -0.5 + self.labels_train
+        self.x_test[:,2]  = -0.5 + self.labels_test
+
+        self.dtree = dt.DecisionTree(
+            train_data=self.x_train, train_labels=self.labels_train,
+            test_data=self.x_test, test_labels=self.labels_test,
+        )
+
+        self.dtree.grow()
 
 class TestDecisionTreePrune:
     labels_train = LABELS_TRAIN
@@ -317,22 +336,18 @@ class TestDecisionTreeMissing:
         self.dtree.prune()
 
 
-class TestEasyNodeBool(TestEasyNode):
-    labels_train = LABELS_TRAIN_BOOL
+def use_bool_labels(cls):
+    class newclass(cls):
+        labels_train = LABELS_TRAIN_BOOL
+        labels_test = LABELS_TEST_BOOL
+    newclass.__name__ = cls.__name__ + 'Bool'
+    return newclass
 
-class TestNodeBool(TestNode):
-    labels_train = LABELS_TRAIN_BOOL
-
-class TestDecisionTreeInitBool(TestDecisionTreeInit):
-    labels_train = LABELS_TRAIN_BOOL
-
-class TestDecisionTreeGrowClassifyBool(TestDecisionTreeGrowClassify):
-    labels_train = LABELS_TRAIN_BOOL
-
-class TestEasyDecisionTreeErrorBool(TestEasyDecisionTreeError):
-    labels_train = LABELS_TRAIN_BOOL
-    labels_test = LABELS_TEST_BOOL
-
-class TestDecisionTreePruneBool(TestDecisionTreePrune):
-    labels_train = LABELS_TRAIN_BOOL
-    labels_test = LABELS_TEST_BOOL
+TestEasyNodeBool = use_bool_labels(TestEasyNode)
+TestEasyNodeCatBool = use_bool_labels(TestEasyNodeCat)
+TestNodeBool = use_bool_labels(TestNode)
+TestDecisionTreeInitBool = use_bool_labels(TestDecisionTreeInit)
+TestDecisionTreeGrowClassifyBool = use_bool_labels(TestDecisionTreeGrowClassify)
+TestEasyDecisionTreeErrorBool = use_bool_labels(TestEasyDecisionTreeError)
+TestEasyDecisionTreeErrorCatBool = use_bool_labels(TestEasyDecisionTreeErrorCat)
+TestDecisionTreePruneBool = use_bool_labels(TestDecisionTreePrune)
