@@ -20,7 +20,7 @@ def _choose_split(data, labels, objfunc):
             fracs_less = nums_less/obs_num
 
             props_less = (np.cumsum(labels_sorted)[:-1] / nums_less)
-            props_more = (np.cumsum(labels_sorted[::-1])[:-1] / nums_less)[::-1]
+            props_more = (np.cumsum(labels_sorted[:0:-1]) / nums_less)[::-1]
 
             cand_objs = (objfunc(props_less) * fracs_less +
                          objfunc(props_more) * (1-fracs_less))
