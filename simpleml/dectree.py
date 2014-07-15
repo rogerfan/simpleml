@@ -34,9 +34,12 @@ def _choose_split(data, labels, objfunc):
             for cand_split in uniquelist[1:]:
                 subset0 = labels[data[:,cand_var] <  cand_split]
                 subset1 = labels[data[:,cand_var] >= cand_split]
+                prop0 = np.count_nonzero(subset0) / len(subset0)
+                prop1 = np.count_nonzero(subset1) / len(subset1)
+
                 frac0 = len(subset0)/obs_num
-                cand_obj = ( objfunc(subset0) * frac0 +
-                             objfunc(subset1) * (1-frac0) )
+                cand_obj = ( objfunc(prop0) * frac0 +
+                             objfunc(prop1) * (1-frac0) )
                 if cand_obj < min_obj:
                     min_obj = cand_obj
                     min_split = (cand_var, cand_split)
