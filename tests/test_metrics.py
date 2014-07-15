@@ -1,55 +1,49 @@
 import numpy as np
+from nose.tools import nottest
 
 import simpleml.metrics as met
 
 
+PURITY_FUNCTION_LIST = [met.entropy, met.gini, met.misclass]
+
+
+def create_funcs_generator(function_list):
+    def test_funcs(self):
+        for func in function_list:
+            yield self.checker, func
+    return test_funcs
+
+
 class TestPurityHomogeneous:
-    def setup(self):
-        self.all0 = np.array([0 for i in range(5)])
-        self.all1 = [1 for i in range(5)]
+    vals_to_test = (0., 1.)
+    test_funcs = create_funcs_generator(PURITY_FUNCTION_LIST)
 
-    def test_entropy(self):
-        assert met.entropy(self.all0) == 0
-        assert met.entropy(self.all1) == 0
-
-    def test_gini(self):
-        assert met.gini(self.all0) == 0
-        assert met.gini(self.all1) == 0
-
-    def test_misclass(self):
-        assert met.misclass(self.all0) == 0
-        assert met.misclass(self.all1) == 0
+    def checker(self, func):
+        for prop in self.vals_to_test:
+            assert func(prop) == 0
+            assert func(np.array([prop])) == 0
 
 class TestPuritySymmetry:
-    def setup(self):
-        self.labels0 = np.array([0 for i in range(4)] + [1])
-        self.labels1 = np.array([1 for i in range(4)] + [0])
+    array_to_test = np.array([0., .1, .25, .45])
+    test_funcs = create_funcs_generator(PURITY_FUNCTION_LIST)
 
-    def test_entropy(self):
-        assert np.isclose(met.entropy(self.labels0), met.entropy(self.labels1))
-
-    def test_gini(self):
-        assert np.isclose(met.gini(self.labels0), met.gini(self.labels1))
-
-    def test_misclass(self):
-        assert np.isclose(met.misclass(self.labels0), met.misclass(self.labels1))
+    def checker(self, func):
+        assert np.allclose(func(self.array_to_test), func(1-self.array_to_test))
 
 class TestPurityDeriv:
+    vals_to_test = [0., .05, 0.12, 0.18, 0.19, 0.20, 0.3, 0.41, 0.48, 0.49]
+    test_funcs = create_funcs_generator(PURITY_FUNCTION_LIST)
+
+    def checker(self, func):
+        for a, b in zip(self.vals_to_test[:-1], self.vals_to_test[1:]):
+            assert func(a) < func(b)
+
+class TestPurityLargeVector:
+    test_funcs = create_funcs_generator(PURITY_FUNCTION_LIST)
+
     def setup(self):
-        self.labels = [
-            np.array([0, 0, 0, 0, 0]),
-            [1, 0, 0, 0, 0],
-            np.array([1, 1, 0, 0, 0])
-        ]
+        np.random.seed(1254)
+        self.array_to_test = np.random.randint(0, 1, size=5000)
 
-    def test_entropy(self):
-        assert met.entropy(self.labels[0]) < met.entropy(self.labels[1])
-        assert met.entropy(self.labels[1]) < met.entropy(self.labels[2])
-
-    def test_gini(self):
-        assert met.gini(self.labels[0]) < met.gini(self.labels[1])
-        assert met.gini(self.labels[1]) < met.gini(self.labels[2])
-
-    def test_misclass(self):
-        assert met.misclass(self.labels[0]) < met.misclass(self.labels[1])
-        assert met.misclass(self.labels[1]) < met.misclass(self.labels[2])
+    def checker(self, func):
+        func(self.array_to_test)
