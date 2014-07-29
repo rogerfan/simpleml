@@ -210,18 +210,18 @@ class TestDecisionTreeGrowClassify:
         min_obs = 5
         max_depth = 3
 
-        self.dtree.grow(min_obs_split=min_obs, max_depth=max_depth)
+        self.dtree.fit(min_obs_split=min_obs, max_depth=max_depth)
         assert(self.dtree.grow_params['min_obs_split'] == min_obs)
         assert(self.dtree.grow_params['max_depth'] == max_depth)
 
         min_obs_new = 10
 
-        self.dtree.grow(min_obs_split=min_obs_new)
+        self.dtree.fit(min_obs_split=min_obs_new)
         assert(self.dtree.grow_params['min_obs_split'] == min_obs_new)
         assert(self.dtree.grow_params['max_depth'] == np.inf)
 
     def test_classify(self):
-        self.dtree.grow()
+        self.dtree.fit()
         assert np.all(self.dtree.classify(X_TRAIN) == self.labels_train)
         assert np.all(self.dtree.classify(X_TRAIN[5]) == self.labels_train[5])
 
@@ -242,7 +242,7 @@ class TestEasyDecisionTreeError:
             test_data=self.x_test, test_labels=self.labels_test,
         )
 
-        self.dtree.grow()
+        self.dtree.fit()
 
     def test_train_err(self):
         assert self.dtree.train_err() == 0
@@ -266,7 +266,7 @@ class TestEasyDecisionTreeErrorCat(TestEasyDecisionTreeError):
             test_data=self.x_test, test_labels=self.labels_test,
         )
 
-        self.dtree.grow()
+        self.dtree.fit()
 
 class TestDecisionTreePrune:
     labels_train = LABELS_TRAIN
@@ -277,7 +277,7 @@ class TestDecisionTreePrune:
             train_data=X_TRAIN, train_labels=self.labels_train,
             test_data=X_TEST, test_labels=self.labels_test
         )
-        self.dtree.grow()
+        self.dtree.fit()
 
     def test_prune_err(self):
         naive_test_err = self.dtree.test_err()
@@ -328,7 +328,7 @@ class TestDecisionTreeMissing:
     def test_test_err_nodata(self):
         self.dtree.data['train_data'] = X_TRAIN
         self.dtree.data['train_labels'] = LABELS_TRAIN
-        self.dtree.grow(max_depth=0)
+        self.dtree.fit(max_depth=0)
         self.dtree.test_err()
 
     @raises(AttributeError)

@@ -38,7 +38,7 @@ for i in range(20):
     start = time.clock()
     res['depth'].append(i)
 
-    tree.grow(min_obs_split=5, max_depth=i)
+    tree.fit(min_obs_split=5, max_depth=i)
     res['train_err'].append(tree.train_err())
     res['test_err'].append(tree.test_err(x_test,
                                          y_test))
@@ -75,7 +75,7 @@ for i in range(20):
     start = time.clock()
     res_pca['depth'].append(i)
 
-    tree_pca.grow(min_obs_split=5, max_depth=i)
+    tree_pca.fit(min_obs_split=5, max_depth=i)
     res_pca['train_err'].append(tree_pca.train_err())
     res_pca['test_err'].append(tree_pca.test_err(x_test,
                                                  y_test))
@@ -107,7 +107,7 @@ for i in range(20):
     start = time.clock()
     res_pca1['depth'].append(i)
 
-    tree_pca1.grow(min_obs_split=5, max_depth=i)
+    tree_pca1.fit(min_obs_split=5, max_depth=i)
     res_pca1['train_err'].append(tree_pca1.train_err())
     res_pca1['test_err'].append(tree_pca1.test_err(x_test,
                                                    y_test))

@@ -4,6 +4,7 @@ Decision Trees.
 import numpy as np
 
 from . import metrics
+from .baseclasses import BinaryClassifier
 
 
 def _choose_split(data, labels, objfunc):
@@ -156,7 +157,7 @@ def data_at_node(curr_node, target_node, data):
     return result
 
 
-class DecisionTree:
+class DecisionTree(BinaryClassifier):
     '''
     Decision Tree.
 
@@ -218,7 +219,7 @@ class DecisionTree:
 
         return DecisionTree(**args)
 
-    def grow(self, min_obs_split=1, max_depth=None, objfunc=metrics.gini):
+    def fit(self, min_obs_split=1, max_depth=None, objfunc=metrics.gini):
         '''
         Grow the decision tree using training data.
 
