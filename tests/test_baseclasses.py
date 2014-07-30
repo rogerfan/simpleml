@@ -13,13 +13,13 @@ def test_req_meth():
                 getattr(cls, funcname)(None)
         yield func, cls
 
-class NotBinClass:
+class NotBinClass:  # pragma: no cover
     def fit(self): pass
 
-class SimpBinClass(NotBinClass):
+class SimpBinClass(NotBinClass):  # pragma: no cover
     def classify(self): pass
 
-class SimpBinClassWithErr(SimpBinClass):
+class SimpBinClassWithErr(SimpBinClass):  # pragma: no cover
     def train_err(self): pass
     def test_err(self): pass
 
