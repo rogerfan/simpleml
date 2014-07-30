@@ -1,5 +1,4 @@
 import numpy as np
-from nose.tools import nottest
 
 import simpleml.metrics as met
 

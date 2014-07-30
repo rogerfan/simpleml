@@ -200,25 +200,40 @@ class TestDecisionTreeInit:
             assert dtree2.data[name] is self.dtree.data[name]
 
 
-class TestDecisionTreeGrowClassify:
+class TestDecisionTreeFitClassify:
     labels_train = LABELS_TRAIN
 
     def setup(self):
         self.dtree = dt.DecisionTree(train_data=X_TRAIN, train_labels=self.labels_train)
 
-    def test_grow_params(self):
+    def test_fit_params(self):
         min_obs = 5
         max_depth = 3
 
         self.dtree.fit(min_obs_split=min_obs, max_depth=max_depth)
-        assert(self.dtree.grow_params['min_obs_split'] == min_obs)
-        assert(self.dtree.grow_params['max_depth'] == max_depth)
+        assert self.dtree.fit_params['min_obs_split'] == min_obs
+        assert self.dtree.fit_params['max_depth'] == max_depth
 
         min_obs_new = 10
 
         self.dtree.fit(min_obs_split=min_obs_new)
-        assert(self.dtree.grow_params['min_obs_split'] == min_obs_new)
-        assert(self.dtree.grow_params['max_depth'] == np.inf)
+        assert self.dtree.fit_params['min_obs_split'] == min_obs_new
+        assert self.dtree.fit_params['max_depth'] == np.inf
+
+    def test_consider_vars(self):
+        self.dtree.fit(max_depth=1, vars_to_consider=[1])
+        assert self.dtree.tree.split[0] == 1
+
+        self.dtree.fit(max_depth=1, vars_to_consider=[0, 2])
+        assert self.dtree.tree.split[0] in [0, 2]
+
+    @raises(ValueError)
+    def test_consider_vars_outofrange1(self):
+        self.dtree.fit(max_depth=1, vars_to_consider=[0, 4])
+
+    @raises(ValueError)
+    def test_consider_vars_outofrange2(self):
+        self.dtree.fit(max_depth=1, vars_to_consider=[-1])
 
     def test_classify(self):
         self.dtree.fit()
@@ -347,7 +362,7 @@ TestEasyNodeBool = use_bool_labels(TestEasyNode)
 TestEasyNodeCatBool = use_bool_labels(TestEasyNodeCat)
 TestNodeBool = use_bool_labels(TestNode)
 TestDecisionTreeInitBool = use_bool_labels(TestDecisionTreeInit)
-TestDecisionTreeGrowClassifyBool = use_bool_labels(TestDecisionTreeGrowClassify)
+TestDecisionTreeFitClassifyBool = use_bool_labels(TestDecisionTreeFitClassify)
 TestEasyDecisionTreeErrorBool = use_bool_labels(TestEasyDecisionTreeError)
 TestEasyDecisionTreeErrorCatBool = use_bool_labels(TestEasyDecisionTreeErrorCat)
 TestDecisionTreePruneBool = use_bool_labels(TestDecisionTreePrune)
