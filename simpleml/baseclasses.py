@@ -1,6 +1,21 @@
+'''
+Abstract base classes.
+'''
 from abc import ABCMeta, abstractmethod
 
-class BinaryClassifier(metaclass=ABCMeta):
+
+class AbstractBase(metaclass=ABCMeta):
+    @classmethod
+    def __subclasshook__(cls, C):
+        for method in cls._req_meth:
+            if not any([method in B.__dict__ for B in C.__mro__]):
+                return NotImplemented
+        return True
+
+
+class BinaryClassifier(AbstractBase):
+    _req_meth = ('fit', 'classify')
+
     @abstractmethod
     def fit(self):
         ''' Fit the classifier using training data. '''
@@ -11,14 +26,15 @@ class BinaryClassifier(metaclass=ABCMeta):
         ''' Classify new observations using the fitted classifier. '''
         return
 
-    @classmethod
-    def __subclasshook__(cls, C):
-        if cls is not BinaryClassifier:
-            return NotImplemented
+class BinaryClassifierWithErrors(BinaryClassifier):
+    _req_meth = BinaryClassifier._req_meth + ('train_err', 'test_err')
 
-        required_methods = ['fit', 'classify']
-        for method in required_methods:
-            if not any([method in B.__dict__ for B in C.__mro__]):
-                return NotImplemented
-        return True
+    @abstractmethod
+    def train_err(self):
+        ''' Calculate the training error. '''
+        return
 
+    @abstractmethod
+    def test_err(self):
+        ''' Calculate the test error. '''
+        return
