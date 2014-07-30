@@ -56,7 +56,7 @@ def _choose_split(data, labels, objfunc, max_features=None):
     return min_split
 
 
-class DecisionNode:
+class _DecisionNode:
     def __init__(self, majority, split=None, children=None, parent=None):
         self.split = split
         self.majority = majority
@@ -110,7 +110,7 @@ class DecisionNode:
                     self.children[1].num_nodes())
 
 
-def create_decision_node(data, labels, min_obs_split=1, max_depth=None,
+def _create_decision_node(data, labels, min_obs_split=1, max_depth=None,
                           objfunc=metrics.gini, max_features=None):
 
     if max_depth is None:
@@ -123,7 +123,7 @@ def create_decision_node(data, labels, min_obs_split=1, max_depth=None,
     if (  len(labels) < min_obs_split or  # Leaf size condition
           max_depth == 0 or               # Reached max depth
           prop == 0 or prop == 1 ):       # Homogenous branch
-        return DecisionNode(majority=majority)
+        return _DecisionNode(majority=majority)
 
     # Find best split
     split = _choose_split(data, labels, objfunc,
@@ -131,15 +131,15 @@ def create_decision_node(data, labels, min_obs_split=1, max_depth=None,
     cond = data[:, split[0]] < split[1]
 
     # Build recursively defined tree
-    tree = DecisionNode(
+    tree = _DecisionNode(
         majority, split=split,
         children=[
-            create_decision_node(
+            _create_decision_node(
                 data[cond], labels[cond],
                 min_obs_split, max_depth-1, objfunc=objfunc,
                 max_features=max_features
             ),
-            create_decision_node(
+            _create_decision_node(
                 data[np.logical_not(cond)], labels[np.logical_not(cond)],
                 min_obs_split, max_depth-1, objfunc=objfunc,
                 max_features=max_features
@@ -151,18 +151,21 @@ def create_decision_node(data, labels, min_obs_split=1, max_depth=None,
     return tree
 
 
-def data_at_node(curr_node, target_node, data):
-
+def _data_at_node(curr_node, target_node, data):
+    '''
+    Percolates the data down the tree starting at curr_node and returns the
+    observations that reach target_node.
+    '''
     if curr_node is target_node:
         return data
     if curr_node.split is None:
         return None
 
     var, split = curr_node.split
-    result = data_at_node(curr_node.children[0], target_node,
+    result = _data_at_node(curr_node.children[0], target_node,
                           data[data[:,var] < split])
     if result is None:
-        result = data_at_node(curr_node.children[1], target_node,
+        result = _data_at_node(curr_node.children[1], target_node,
                               data[data[:,var] >= split])
 
     return result
@@ -178,14 +181,19 @@ class DecisionTree:
         Independent data and labels for training.
     test_data, test_labels : ndarray [None, None]
         Independent data and labels for testing.
-    test : DecisionNode [None]
+    tree : _DecisionNode [None]
         Already fitted tree.
+    seed : int [None]
+        If provided, seeds the random number generator for use in random
+        feature selection when fitting. Note that this does not do anything if
+        max_features is not set and that it is overridden by any seed provided
+        when through the fit method.
 
     Attributes
     ----------
     data : dict
         Contains training and test data if provided.
-    tree : DecisionNode
+    tree : _DecisionNode
         Contains the tree once it is fit.
     fit_params : dict
         Contains parameters used for fitting tree.
@@ -245,8 +253,10 @@ class DecisionTree:
             If provided, number of features to randomly choose to consider
             at each split point
         seed : int [None]
-            If provided, seeds the random generator. Note that this overrides
-            any seed provided when the tree was initialized.
+            If provided, seeds the random number generator for use in random
+            feature selection. Note that this does not do anything if
+            max_features is not set and that it overrides any seed provided when
+            the tree was initialized.
         '''
         if max_depth is None:
             max_depth = np.inf
@@ -257,13 +267,13 @@ class DecisionTree:
                 raise ValueError('max_features={} is an invalid '
                                  'value.'.format(max_features))
 
-        if seed is None:
-            seed = self.seed
-        if seed is not None:
-            np.random.seed(seed)
+            if seed is None:
+                seed = self.seed
+            if seed is not None:
+                np.random.seed(seed)
 
         # Grow tree
-        self.tree = create_decision_node(
+        self.tree = _create_decision_node(
             self.data['train_data'], self.data['train_labels'],
             min_obs_split=min_obs_split, max_depth=max_depth, objfunc=objfunc,
             max_features=max_features
