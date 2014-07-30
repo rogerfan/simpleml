@@ -220,25 +220,33 @@ class TestDecisionTreeFitClassify:
         assert self.dtree.fit_params['min_obs_split'] == min_obs_new
         assert self.dtree.fit_params['max_depth'] == np.inf
 
-    def test_consider_vars(self):
-        self.dtree.fit(max_depth=1, vars_to_consider=[1])
-        assert self.dtree.tree.split[0] == 1
-
-        self.dtree.fit(max_depth=1, vars_to_consider=[0, 2])
-        assert self.dtree.tree.split[0] in [0, 2]
+    def test_max_features(self):
+        self.dtree.fit(max_depth=1, max_features=2)
 
     @raises(ValueError)
-    def test_consider_vars_outofrange1(self):
-        self.dtree.fit(max_depth=1, vars_to_consider=[0, 4])
+    def test_max_features_outofrange1(self):
+        self.dtree.fit(max_depth=1, max_features=4)
 
     @raises(ValueError)
-    def test_consider_vars_outofrange2(self):
-        self.dtree.fit(max_depth=1, vars_to_consider=[-1])
+    def test_max_features_outofrange2(self):
+        self.dtree.fit(max_depth=1, max_features=-1)
 
     def test_classify(self):
         self.dtree.fit()
         assert np.all(self.dtree.classify(X_TRAIN) == self.labels_train)
         assert np.all(self.dtree.classify(X_TRAIN[5]) == self.labels_train[5])
+
+    def test_seed(self):
+        seed = 195
+        self.dtree.fit(seed=seed, max_features=1)
+        dtree2 = dt.DecisionTree(
+            train_data=X_TRAIN, train_labels=self.labels_train, seed=seed
+        )
+        dtree2.fit(max_features=1)
+
+        for desc1, desc2 in zip(self.dtree.tree.descendents(),
+                                dtree2.tree.descendents()):
+            assert desc1.split == desc2.split
 
 
 class TestEasyDecisionTreeError:
@@ -282,6 +290,7 @@ class TestEasyDecisionTreeErrorCat(TestEasyDecisionTreeError):
         )
 
         self.dtree.fit()
+
 
 class TestDecisionTreePrune:
     labels_train = LABELS_TRAIN
