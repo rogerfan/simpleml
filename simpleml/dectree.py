@@ -153,7 +153,7 @@ def _create_decision_node(data, labels, min_obs_split=2, max_depth=np.inf,
     return tree
 
 
-def _data_at_node(curr_node, target_node, data):
+def _data_at_node(curr_node, target_node, data):  # pragma: no cover
     '''
     Percolates the data down the tree starting at curr_node and returns the
     observations that reach target_node.

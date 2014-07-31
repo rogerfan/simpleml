@@ -146,6 +146,7 @@ class TestDecisionTreeFit:
 
     def test_print(self):
         dtree = dt.DecisionTree()
+        dtree.fit(X_TRAIN, self.labels_train)
         print(dtree)
 
 
