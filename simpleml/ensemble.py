@@ -32,10 +32,11 @@ class EnsembleBinaryClassifier:
 
 
 
+class BaggingBinaryClassifier:
+    def __init__(self, binaryclassifiercls):
+        super(BaggingBinaryClassifier, self).__init__()
+        self.base_model = binaryclassifiercls
+        self.vars_used = []
 
-
-
-
-# class BaggingBinaryClassifier:
-#     def __init__(self, binaryclassifier):
-#         self.model =
+    def fit(self, n_models=10, max_features=None, seed=None):
+        pass
