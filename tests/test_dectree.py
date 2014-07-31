@@ -325,7 +325,7 @@ class TestDecisionTreeMissing:
 
     @raises(AttributeError)
     def test_train_err_notree(self):
-        self.dtree.train_err()
+        self.dtree.train_err
 
     @raises(AttributeError)
     def test_train_err_nofit(self):
@@ -336,13 +336,6 @@ class TestDecisionTreeMissing:
     @raises(AttributeError)
     def test_test_err_notree(self):
         self.dtree.test_err(X_TEST, LABELS_TEST)
-
-    @raises(AttributeError)
-    def test_test_err_nodata(self):
-        self.dtree.data['train_data'] = X_TRAIN
-        self.dtree.data['train_labels'] = LABELS_TRAIN
-        self.dtree.fit(max_depth=0)
-        self.dtree.test_err()
 
     @raises(AttributeError)
     def test_prune(self):
