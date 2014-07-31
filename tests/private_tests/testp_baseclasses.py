@@ -10,7 +10,7 @@ def test_req_meth():
 
         def func(cls):
             for funcname in cls._req_meth:
-                getattr(cls, funcname)(None)
+                assert funcname in dir(cls)
         yield func, cls
 
 class NotBinClass:  # pragma: no cover
