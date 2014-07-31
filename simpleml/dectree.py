@@ -1,6 +1,8 @@
 '''
 Decision Trees.
 '''
+from copy import deepcopy
+
 import numpy as np
 
 from . import metrics
@@ -110,11 +112,11 @@ class _DecisionNode:
                     self.children[1].num_nodes())
 
 
-def _create_decision_node(data, labels, min_obs_split=1, max_depth=None,
-                          objfunc=metrics.gini, max_features=None):
+def _create_decision_node(data, labels, min_obs_split=2, max_depth=np.inf,
+                          objfunc=metrics.gini, max_features=None, seed=None):
 
-    if max_depth is None:
-        max_depth = np.inf
+    if seed is not None:
+        np.random.seed(seed)
 
     prop = np.mean(labels)
     majority = int(np.round(prop))
@@ -177,167 +179,129 @@ class DecisionTree:
 
     Parameters
     ----------
-    train_data, train_labels : ndarray [None, None]
-        Independent data and labels for training.
-    test_data, test_labels : ndarray [None, None]
-        Independent data and labels for testing.
-    tree : _DecisionNode [None]
-        Already fitted tree.
+    min_obs_split : int [2]
+        Nodes with sizes less than this will not be split further.
+    max_depth : int [None]
+        Maximum depth to grow the tree to.
+    objfunc : function [metrics.gini]
+        Objective function to minimize when selecting splits.
+    max_features : int [None]
+        If provided, number of features to randomly choose to consider
+        at each split point
     seed : int [None]
         If provided, seeds the random number generator for use in random
-        feature selection when fitting. Note that this does not do anything if
-        max_features is not set and that it is overridden by any seed provided
-        when through the fit method.
+        feature selection. Note that this does not do anything if
+        max_features is not set.
 
     Attributes
     ----------
-    data : dict
-        Contains training and test data if provided.
+    params : dict
+        Parameters used for fitting tree.
     tree : _DecisionNode
         Contains the tree once it is fit.
-    fit_params : dict
-        Contains parameters used for fitting tree.
+    train_err : float
+        Training error once the tree is fit.
+    pruned : bool
+        Tracks whether the tree has been pruned.
     '''
-    def __init__(self, train_data=None, train_labels=None,
-                 test_data=None, test_labels=None,
-                 tree=None, seed=None):
-
-        self.data = {}
-        self.pruned = False
-        self.fit_params = None
-        self.tree = tree
+    def __init__(self, min_obs_split=2, max_depth=None, objfunc=metrics.gini,
+                 max_features=None, seed=None):
+        self.min_obs_split = min_obs_split
+        if max_depth is None:
+            self.max_depth = np.inf
+        else:
+            self.max_depth = max_depth
+        self.objfunc = objfunc
+        self.max_features = max_features
         self.seed = seed
 
-        def check_dim(data, labels):
-            assert(len(data) == len(labels))
-            assert(len(labels.shape) == 1)
-            assert(len(data.shape) == 2)
-
-        if train_data is not None and train_labels is not None:
-            check_dim(train_data, train_labels)
-
-            self.data['train_data'] = train_data
-            self.data['train_labels'] = train_labels
-
-        if test_data is not None and test_labels is not None:
-            check_dim(test_data, test_labels)
-
-            self.data['test_data'] = test_data
-            self.data['test_labels'] = test_labels
+        self.tree = None
+        self._train_err = None
+        self.pruned = False
 
     def __str__(self):
         return self.tree.__str__()
 
+    @property
+    def params(self):
+        return {
+            'min_obs_split': self.min_obs_split,
+            'max_depth': self.max_depth,
+            'objfunc': self.objfunc,
+            'max_features': self.max_features,
+            'seed': self.seed
+        }
+
+    @property
+    def train_err(self):
+        if self._train_err is None:
+            raise AttributeError('Tree has not been fitted yet.')
+        return self._train_err
+
     def copy(self):
-        from copy import deepcopy
+        treecopy = DecisionTree(**self.params)
+        treecopy.tree = deepcopy(self.tree)
 
-        args = self.data.copy()
-        args['tree'] = deepcopy(self.tree)
+        return treecopy
 
-        return DecisionTree(**args)
-
-    def fit(self, min_obs_split=1, max_depth=None, objfunc=metrics.gini,
-            max_features=None, seed=None):
+    def fit(self, X, Y):
         '''
         Fit the decision tree using training data.
 
         Parameters
         ----------
-        min_obs_split : int [1]
-            Nodes with sizes less than this will not be split further.
-        max_depth : int [None]
-            Maximum depth to grow the tree to.
-        objfunc : function [metrics.gini]
-            Objective function to minimize when selecting splits.
-        max_features : int [None]
-            If provided, number of features to randomly choose to consider
-            at each split point
-        seed : int [None]
-            If provided, seeds the random number generator for use in random
-            feature selection. Note that this does not do anything if
-            max_features is not set and that it overrides any seed provided when
-            the tree was initialized.
+        X : array of shape (n_samples, n_features)
+            Feature dataset for training.
+        Y : array of shape (n_samples)
+            Labels for training.
         '''
-        if max_depth is None:
-            max_depth = np.inf
-
-        if max_features is not None:
-            if (  max_features > self.data['train_data'].shape[1] or
-                  max_features <= 0):
+        if self.max_features is not None:
+            if (  self.max_features > X.shape[1] or
+                  self.max_features <= 0):
                 raise ValueError('max_features={} is an invalid '
-                                 'value.'.format(max_features))
+                                 'value.'.format(self.max_features))
 
-            if seed is None:
-                seed = self.seed
-            if seed is not None:
-                np.random.seed(seed)
+            if self.seed is not None:
+                np.random.seed(self.seed)
 
-        # Grow tree
-        self.tree = _create_decision_node(
-            self.data['train_data'], self.data['train_labels'],
-            min_obs_split=min_obs_split, max_depth=max_depth, objfunc=objfunc,
-            max_features=max_features
-        )
-
-        # Save parameters
-        self.fit_params = {
-            'min_obs_split': min_obs_split,
-            'max_depth': max_depth,
-            'objfunc': objfunc,
-            'max_features': max_features,
-            'seed': seed
-        }
-
+        self.tree = _create_decision_node(X, Y, **self.params)
+        self._train_err = self.test_err(X, Y)
         return self
 
-    def classify(self, new_data):
+    def classify(self, X):
         '''
         Use the fitted decision tree to classify data.
 
         Parameters
         ----------
-        new_data : ndarray
-            Array of new data. Can be a single or multiple observations.
+        X : array of shape (n_features) or (n_samples, n_features)
+            Feature data to classify. Can be a single or multiple observations.
         '''
         if self.tree is None:
             raise AttributeError('Tree has not been fitted yet.')
 
-        if len(new_data.shape) == 1:
-            return self.tree.classify_obs(new_data)
+        if len(X.shape) == 1:
+            return self.tree.classify_obs(X)
         else:
-            return np.array([self.tree.classify_obs(obs) for obs in new_data])
+            return np.array([self.tree.classify_obs(obs) for obs in X])
 
-    def train_err(self):
-        ''' Compute training error. '''
-        if 'train_data' not in self.data:
-            raise AttributeError('No training data provided.')
-
-        return np.mean(self.classify(self.data['train_data']) !=
-                       self.data['train_labels'])
-
-    def test_err(self, data=None, labels=None):
+    def test_err(self, X, Y):
         '''
         Compute test error. Will use previously provided test data, or can
         be provided with new test data.
 
         Parameters
         ----------
-        data, labels : ndarray [None, None]
-            Data to calculate test error on. If not provided, will attempt to
-            use test data provided at initialization.
+        X : array of shape (n_samples, n_features)
+            Feature dataset for testing.
+        Y : array of shape (n_samples)
+            Labels for testing.
         '''
-        if data is not None and labels is not None:
-            return np.mean(self.classify(data) != labels)
+        return np.mean(self.classify(X) != Y)
 
-        if 'test_data' not in self.data:
-            raise AttributeError('No testing data provided.')
-
-        return np.mean(self.classify(self.data['test_data']) !=
-                       self.data['test_labels'])
-
-    def prune(self):
+    def prune(self, X, Y):
         already_considered = []
-        curr_err = self.test_err()
+        curr_err = self.test_err(X, Y)
 
         pruned_something = True
         while pruned_something:
@@ -352,7 +316,7 @@ class DecisionTree:
                 stump.split = None
 
                 # Calculate new error after pruning the stump
-                new_err = self.test_err()
+                new_err = self.test_err(X, Y)
 
                 if new_err <= curr_err:
                     # Prune the stump
