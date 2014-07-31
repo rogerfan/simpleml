@@ -130,10 +130,16 @@ class TestEasyNode:
         tree = dt._create_decision_node(self.x, self.labels_train, max_depth=0)
         assert(len(tree.stumps()) == 0)
 
-class TestEasyNodeCat(TestEasyNode):
+class TestEasyNodeBin(TestEasyNode):
     def setup(self):
         self.x =  X_TRAIN.copy()
         self.x[:,2] = -0.5 + self.labels_train
+
+class TestEasyNodeCat(TestEasyNode):
+    def setup(self):
+        self.x =  X_TRAIN.copy()
+        self.x[:,2] = (-0.5 + self.labels_train +
+                       np.logical_and(self.labels_train, self.x[:,2] > 0))
 
 
 class TestNode:
@@ -177,5 +183,5 @@ def use_bool_labels(cls):
     return newclass
 
 TestEasyNodeBool = use_bool_labels(TestEasyNode)
-TestEasyNodeCatBool = use_bool_labels(TestEasyNodeCat)
+TestEasyNodeBinBool = use_bool_labels(TestEasyNodeBin)
 TestNodeBool = use_bool_labels(TestNode)

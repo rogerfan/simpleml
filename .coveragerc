@@ -1,2 +1,5 @@
+[run]
+branch = True
+
 [report]
 omit = simpleml/baseclasses.py
