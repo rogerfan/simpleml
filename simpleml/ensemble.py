@@ -30,9 +30,7 @@ class EnsembleBinaryClassifier:
         return results >= .5
 
 
-
-
-class BaggingBinaryClassifier:
+class BaggingBinaryClassifier(EnsembleBinaryClassifier):
     def __init__(self, binaryclassifiercls):
         super(BaggingBinaryClassifier, self).__init__()
         self.base_model = binaryclassifiercls
