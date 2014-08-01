@@ -39,7 +39,7 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
 
     def __init__(self, binaryclassifiercls, model_params=None, n_models=10,
                  seed=None):
-        super(BaggingBinaryClassifier, self).__init__()
+        super(type(self), self).__init__()
 
         self.base_model = binaryclassifiercls
         if model_params is None:
