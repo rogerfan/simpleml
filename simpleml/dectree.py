@@ -204,6 +204,9 @@ class DecisionTree:
     pruned : bool
         Tracks whether the tree has been pruned.
     '''
+    params_names = ('min_obs_split', 'max_depth', 'objfunc', 'max_features',
+                    'seed')
+
     def __init__(self, min_obs_split=2, max_depth=None, objfunc=metrics.gini,
                  max_features=None, seed=None):
         self.min_obs_split = min_obs_split
@@ -224,13 +227,10 @@ class DecisionTree:
 
     @property
     def params(self):
-        return {
-            'min_obs_split': self.min_obs_split,
-            'max_depth': self.max_depth,
-            'objfunc': self.objfunc,
-            'max_features': self.max_features,
-            'seed': self.seed
-        }
+        result = {}
+        for name in self.params_names:
+            result[name] = getattr(self, name)
+        return result
 
     @property
     def train_err(self):
