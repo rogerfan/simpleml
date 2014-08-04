@@ -50,7 +50,7 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
 
         self.obs_used = []
         self._oob_error = None
-        self._oob_num = 0
+        self._oob_num = None
 
     @property
     def params(self):
@@ -61,21 +61,14 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
 
     @property
     def oob_error(self):
-        if not issubclass(self.base_model, bc.BinaryClassifierWithErrors):
-            raise TypeError("Base model is '{}', which is not a "
-                            "'BinaryClassifierWithErrors'"
-                            ".".format(self.base_model.__name__))
         if self._oob_error is None:
             raise AttributeError('Model has not been fitted yet.')
         return self._oob_error
 
     def fit(self, X, Y, oob_error=True):
         if oob_error:
-            if not issubclass(self.base_model, bc.BinaryClassifierWithErrors):
-                raise TypeError("Base model is '{}', which is not a "
-                                "'BinaryClassifierWithErrors'"
-                                ".".format(self.base_model.__name__))
             self._oob_error = 0
+            self._oob_num = 0
 
         num_obs = len(X)
         for i in range(self.n_models_fit):
@@ -91,8 +84,12 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
             self.add_model(curr_model)
             self.obs_used.append(obs_used)
 
-            # obs_not_used = np.setdiff1d(np.arange(num_obs), obs_used,
-            #                             assume_unique=True)
+            obs_not_used = np.setdiff1d(np.arange(num_obs), obs_used,
+                                        assume_unique=True)
+            curr_oob_error = np.mean(
+                curr_model.test_err(curr_X[obs_not_used],
+                                    curr_Y[obs_not_used])
+            )
 
         return self
 

@@ -1,7 +1,7 @@
 import simpleml.baseclasses as bc
 
 
-classes = ['BinaryClassifier', 'BinaryClassifierWithErrors']
+classes = ['BinaryClassifier']
 
 
 def test_req_meth():
@@ -18,9 +18,6 @@ class NotBinClass:  # pragma: no cover
 
 class SimpBinClass(NotBinClass):  # pragma: no cover
     def classify(self): pass
-
-class SimpBinClassWithErr(SimpBinClass):  # pragma: no cover
-    def train_err(self): pass
     def test_err(self): pass
 
 class TestSubclassBinClass:
@@ -29,16 +26,3 @@ class TestSubclassBinClass:
 
     def test2(self):
         assert issubclass(SimpBinClass, bc.BinaryClassifier)
-
-    def test3(self):
-        assert issubclass(SimpBinClassWithErr, bc.BinaryClassifier)
-
-class TestSubclassBinClassWithErr:
-    def test1(self):
-        assert not issubclass(NotBinClass, bc.BinaryClassifierWithErrors)
-
-    def test2(self):
-        assert not issubclass(SimpBinClass, bc.BinaryClassifierWithErrors)
-
-    def test3(self):
-        assert issubclass(SimpBinClassWithErr, bc.BinaryClassifierWithErrors)

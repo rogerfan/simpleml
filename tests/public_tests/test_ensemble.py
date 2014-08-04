@@ -7,6 +7,8 @@ import simpleml.ensemble as ens
 class NotBinaryClassifier:  # pragma: no cover
     def fit(self):
         pass
+    def test_err(self):
+        pass
 
 class ExBinaryClassifier1(NotBinaryClassifier):  # pragma: no cover
     answer = 1
@@ -18,10 +20,6 @@ class ExBinaryClassifier1(NotBinaryClassifier):  # pragma: no cover
 
 class ExBinaryClassifier0(ExBinaryClassifier1):  # pragma: no cover
     answer = 0
-
-class ExBinaryClassifierWithError(ExBinaryClassifier1):  # pragma: no cover
-    def test_err(self, X, Y):
-        pass
 
 class SimpleClassifier:  # pragma: no cover
     def __init__(self, ind=0):
@@ -37,7 +35,6 @@ class SimpleClassifier:  # pragma: no cover
                         np.ones(len(X))*self.param[0],
                         np.ones(len(X))*self.param[1])
 
-class SimpleClassifierWithErrors(SimpleClassifier):  # pragma: no cover
     def test_err(self, X, Y):
         return np.mean(self.classify(X) != Y)
 
@@ -127,19 +124,27 @@ class TestBaggingBinaryClassifierInit:
         bag = ens.BaggingBinaryClassifier(ExBinaryClassifier1, n_models_fit=5)
         bag.params == bag_params
 
+
 class TestBaggingBinaryClassifierOobErrors:
-    @raises(TypeError)
-    def test_oob_noerror(self):
-        bag = ens.BaggingBinaryClassifier(ExBinaryClassifier1)
-        bag.oob_error
+    X = np.array([[ 1,-1],
+                  [-1, 1],
+                  [ 1,-1],
+                  [ 1, 1],
+                  [-1, 1]])
+    Y = np.array([1, 0, 1, 0, 0])
 
     @raises(AttributeError)
     def test_oob_nofit(self):
-        bag = ens.BaggingBinaryClassifier(ExBinaryClassifierWithError)
+        bag = ens.BaggingBinaryClassifier(ExBinaryClassifier1)
         bag.oob_error
 
+    @raises(TypeError)
+    def test_fit_oob_noerror(self):
+        bag = ens.BaggingBinaryClassifier(ExBinaryClassifier1)
+        bag.fit(self.X, self.Y, oob_error=True)
 
-class TestBaggingBinaryClassifierFit:
+
+class TestBaggingBinaryClassifier:
     X = np.array([[ 1,-1],
                   [-1, 1],
                   [ 1,-1],
@@ -154,13 +159,8 @@ class TestBaggingBinaryClassifierFit:
         assert bag.params == bag_params
         assert bag.n_models == bag_params['n_models_fit'] == bag.n_models_fit
 
-    @raises(TypeError)
-    def test_fit_oob_noerror(self):
-        bag = ens.BaggingBinaryClassifier(SimpleClassifier)
-        bag.fit(self.X, self.Y, oob_error=True)
-
     def test_fit_oob(self):
-        bag = ens.BaggingBinaryClassifier(SimpleClassifierWithErrors)
+        bag = ens.BaggingBinaryClassifier(SimpleClassifier)
         bag.fit(self.X, self.Y, oob_error=True)
         assert np.isfinite(bag.oob_error)
         assert 0. <= bag.oob_error <= 1.
@@ -168,7 +168,7 @@ class TestBaggingBinaryClassifierFit:
     def test_classify_easy(self):
         bag_params = {'model_params': {'ind': 1}, 'n_models_fit': 10,
                       'seed': 23}
-        bag = ens.BaggingBinaryClassifier(SimpleClassifierWithErrors,
+        bag = ens.BaggingBinaryClassifier(SimpleClassifier,
                                           **bag_params)
         bag.fit(self.X, self.Y)
         assert np.all(bag.classify(self.X) == self.Y)

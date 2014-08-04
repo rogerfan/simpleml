@@ -14,7 +14,7 @@ class AbstractBase(metaclass=ABCMeta):
 
 
 class BinaryClassifier(AbstractBase):
-    _req_meth = ('fit', 'classify')
+    _req_meth = ('fit', 'classify', 'test_err')
 
     @abstractmethod
     def fit(self):
@@ -25,9 +25,6 @@ class BinaryClassifier(AbstractBase):
     def classify(self):
         ''' Classify new observations using the fitted classifier. '''
         return
-
-class BinaryClassifierWithErrors(BinaryClassifier):
-    _req_meth = BinaryClassifier._req_meth + ('test_err',)
 
     @abstractmethod
     def test_err(self):
