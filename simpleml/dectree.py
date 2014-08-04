@@ -15,14 +15,13 @@ def _choose_split(data, labels, objfunc, max_features=None):
     if max_features is None:
         vars_to_consider = range(data.shape[1])
     else:
-        vars_to_consider = np.random.choice(
-            range(data.shape[1]), size=max_features, replace=False
-        )
+        vars_to_consider = np.random.choice(data.shape[1], size=max_features,
+                                            replace=False)
 
     for cand_var in vars_to_consider:
         uniquelist = np.unique(data[:, cand_var])
 
-        if len(uniquelist) > obs_num*0.8:  # Continuous case
+        if len(uniquelist) > obs_num*0.2:  # Continuous case
             sorted_rows = data[:, cand_var].argsort()
             labels_sorted = labels[sorted_rows]
 
@@ -45,8 +44,8 @@ def _choose_split(data, labels, objfunc, max_features=None):
             for cand_split in uniquelist[1:]:
                 subset0 = labels[data[:,cand_var] <  cand_split]
                 subset1 = labels[data[:,cand_var] >= cand_split]
-                prop0 = np.count_nonzero(subset0) / len(subset0)
-                prop1 = np.count_nonzero(subset1) / len(subset1)
+                prop0 = np.sum(subset0) / len(subset0)
+                prop1 = np.sum(subset1) / len(subset1)
 
                 frac0 = len(subset0)/obs_num
                 cand_obj = ( objfunc(prop0) * frac0 +
