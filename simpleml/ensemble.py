@@ -138,12 +138,16 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
             obs_used = np.unique(curr_ind)
             self._obs_used.append(obs_used)
 
+            # This is the wrong oob error. I should be classifying each obs
+            # using all the trees that don't use it, taking a vote with those
+            # trees (about 1/3rd), then using those voted classifications
+            # to get an error. This more accurately is predicting the error
+            # for a single tree, not for the forest.
             obs_not_used = np.setdiff1d(np.arange(num_obs), obs_used,
                                         assume_unique=True)
-            curr_oob_error = np.mean(
-                curr_model.test_err(curr_X[obs_not_used],
-                                    curr_Y[obs_not_used])
-            )
+            curr_oob_error = curr_model.test_err(curr_X[obs_not_used],
+                                                 curr_Y[obs_not_used])
+
             curr_oob_num = len(obs_not_used)
 
             self._oob_num += curr_oob_num
