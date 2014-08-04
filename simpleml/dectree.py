@@ -287,8 +287,7 @@ class DecisionTree:
 
     def test_err(self, X, Y):
         '''
-        Compute test error. Will use previously provided test data, or can
-        be provided with new test data.
+        Compute test error.
 
         Parameters
         ----------
