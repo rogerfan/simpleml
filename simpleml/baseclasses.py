@@ -27,12 +27,7 @@ class BinaryClassifier(AbstractBase):
         return
 
 class BinaryClassifierWithErrors(BinaryClassifier):
-    _req_meth = BinaryClassifier._req_meth + ('train_err', 'test_err')
-
-    @abstractmethod
-    def train_err(self):
-        ''' Calculate the training error. '''
-        return
+    _req_meth = BinaryClassifier._req_meth + ('test_err',)
 
     @abstractmethod
     def test_err(self):

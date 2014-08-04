@@ -173,13 +173,28 @@ class TestEasyDecisionTreeError:
     def test_test_err_newdata(self):
         assert self.dtree.test_err(X_TRAIN, self.labels_train) < 1
 
-class TestEasyDecisionTreeErrorCat(TestEasyDecisionTreeError):
+class TestEasyDecisionTreeErrorBin(TestEasyDecisionTreeError):
     def setup(self):
         self.x_train =  X_TRAIN.copy()
         self.x_test =  X_TEST.copy()
 
         self.x_train[:,2] = -0.5 + self.labels_train
         self.x_test[:,2]  = -0.5 + self.labels_test
+
+        self.dtree = dt.DecisionTree()
+        self.dtree.fit(self.x_train, self.labels_train)
+
+class TestEasyDecisionTreeErrorCat(TestEasyDecisionTreeError):
+    def setup(self):
+        self.x_train =  X_TRAIN.copy()
+        self.x_test =  X_TEST.copy()
+
+        self.x_train[:,2] = (-0.5 + self.labels_train +
+                             np.logical_and(self.labels_train,
+                                            self.x_train[:,2] > 0))
+        self.x_test[:,2]  = (-0.5 + self.labels_test +
+                             np.logical_and(self.labels_test,
+                                            self.x_test[:,2] > 0))
 
         self.dtree = dt.DecisionTree()
         self.dtree.fit(self.x_train, self.labels_train)
@@ -238,5 +253,6 @@ def use_bool_labels(cls):
 
 TestDecisionTreeFitBool = use_bool_labels(TestDecisionTreeFit)
 TestEasyDecisionTreeErrorBool = use_bool_labels(TestEasyDecisionTreeError)
+TestEasyDecisionTreeErrorBinBool = use_bool_labels(TestEasyDecisionTreeErrorBin)
 TestEasyDecisionTreeErrorCatBool = use_bool_labels(TestEasyDecisionTreeErrorCat)
 TestDecisionTreePruneBool = use_bool_labels(TestDecisionTreePrune)
