@@ -35,9 +35,9 @@ class EnsembleBinaryClassifier:
 
 
 class BaggingBinaryClassifier(EnsembleBinaryClassifier):
-    bag_params_names = ('model_params', 'n_models', 'seed')
+    bag_params_names = ('model_params', 'n_models_fit', 'seed')
 
-    def __init__(self, binaryclassifiercls, model_params=None, n_models=10,
+    def __init__(self, binaryclassifiercls, model_params=None, n_models_fit=10,
                  seed=None):
         super(type(self), self).__init__()
 
@@ -45,7 +45,7 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
         if model_params is None:
             model_params = {}
         self.model_params = model_params
-        self.n_models = n_models
+        self.n_models_fit = n_models_fit
         self.seed = seed
 
         self.obs_used = []
@@ -78,7 +78,7 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
             self._oob_error = 0
 
         num_obs = len(X)
-        for i in range(self.n_models):
+        for i in range(self.n_models_fit):
             curr_ind = np.random.choice(num_obs, num_obs)
             curr_X = X[curr_ind]
             curr_Y = Y[curr_ind]
