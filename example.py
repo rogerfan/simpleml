@@ -16,8 +16,8 @@ y_data = np.loadtxt('y_class.txt', dtype=int)
 
 x_train = x_data[:5000]
 y_train = y_data[:5000]
-x_test  = x_data[-5000:]
-y_test  = y_data[-5000:]
+x_test  = x_data[-10000:]
+y_test  = y_data[-10000:]
 
 model_params = {
     'min_obs_split': 10,
@@ -26,7 +26,7 @@ model_params = {
 }
 
 bag = BaggingBinaryClassifier(DecisionTree, model_params=model_params,
-                              n_models_fit=40, seed=2349634)
+                              n_models_fit=30, seed=2349634)
 dtree = DecisionTree(min_obs_split=10, max_depth=10)
 
 start = time.clock()
@@ -38,6 +38,6 @@ dtree.fit(x_train, y_train)
 dtree.prune(x_test, y_test)
 print(time.clock() - start)
 
-
+print(bag.oob_error)
 print(bag.test_err(x_test, y_test))
 print(dtree.test_err(x_test, y_test))
