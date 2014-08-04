@@ -78,18 +78,23 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
 
             curr_model = self.base_model(**self.model_params)
             curr_model.fit(curr_X, curr_Y)
+            self.add_model(curr_model)
 
             obs_used = np.unique(curr_ind)
-
-            self.add_model(curr_model)
             self.obs_used.append(obs_used)
 
-            obs_not_used = np.setdiff1d(np.arange(num_obs), obs_used,
-                                        assume_unique=True)
-            curr_oob_error = np.mean(
-                curr_model.test_err(curr_X[obs_not_used],
-                                    curr_Y[obs_not_used])
-            )
+            if oob_error:
+                obs_not_used = np.setdiff1d(np.arange(num_obs), obs_used,
+                                            assume_unique=True)
+                curr_oob_error = np.mean(
+                    curr_model.test_err(curr_X[obs_not_used],
+                                        curr_Y[obs_not_used])
+                )
+                curr_oob_num = len(obs_not_used)
+
+                self._oob_num += curr_oob_num
+                self._oob_error = (self._oob_error*self._oob_num +
+                                   curr_oob_error*curr_oob_num) / self._oob_num
 
         return self
 
