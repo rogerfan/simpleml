@@ -87,6 +87,10 @@ class TestEnsembleBinaryClassifier1:
         res = self.ensemble.classify(np.array([1, 3, 5]))
         assert res == np.ones(1)*self.answer
 
+    def test_error(self):
+        err = self.ensemble.test_err(self.X, np.ones(len(self.X))*self.answer)
+        assert err == 0
+
 class TestEnsembleBinaryClassifier0(TestEnsembleBinaryClassifier1):
     answer = 0
 
@@ -140,14 +144,14 @@ class TestBaggingBinaryClassifierOobErrors:
 
     @raises(TypeError)
     def test_fit_oob_noerror(self):
-        bag = ens.BaggingBinaryClassifier(ExBinaryClassifier1)
-        bag.fit(self.X, self.Y, oob_error=True)
+        bag = ens.BaggingBinaryClassifier(NotBinaryClassifier)
+        bag.fit(self.X, self.Y)
 
 
 class TestBaggingBinaryClassifier:
     X = np.array([[ 1,-1],
                   [-1, 1],
-                  [ 1,-1],
+                  [-1,-1],
                   [ 1, 1],
                   [-1, 1]])
     Y = np.array([1, 0, 1, 0, 0])
@@ -155,13 +159,15 @@ class TestBaggingBinaryClassifier:
     def test_fit(self):
         bag_params = {'model_params': {'ind': 0}, 'n_models_fit': 5, 'seed': 23}
         bag = ens.BaggingBinaryClassifier(SimpleClassifier, **bag_params)
-        bag.fit(self.X, self.Y, oob_error=False)
+        bag.fit(self.X, self.Y)
+
         assert bag.params == bag_params
         assert bag.n_models == bag_params['n_models_fit'] == bag.n_models_fit
 
     def test_fit_oob(self):
-        bag = ens.BaggingBinaryClassifier(SimpleClassifier)
-        bag.fit(self.X, self.Y, oob_error=True)
+        bag = ens.BaggingBinaryClassifier(SimpleClassifier, seed=25)
+        bag.fit(self.X, self.Y)
+
         assert np.isfinite(bag.oob_error)
         assert 0. <= bag.oob_error <= 1.
 
