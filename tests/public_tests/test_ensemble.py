@@ -45,7 +45,7 @@ class TestEnsembleBinaryClassifierAdd:
     num_model = 5
 
     def setup(self):
-        self.ensemble = ens.EnsembleBinaryClassifier()
+        self.ensemble = ens.base.EnsembleBinaryClassifier()
 
     @raises(TypeError)
     def test_not_binary_classifier(self):
@@ -76,7 +76,7 @@ class TestEnsembleBinaryClassifier1:
                   [1, 3, 6]])
 
     def setup(self):
-        self.ensemble = ens.EnsembleBinaryClassifier()
+        self.ensemble = ens.base.EnsembleBinaryClassifier()
         self.ensemble.add_model(ExBinaryClassifier1())
         self.ensemble.add_model(ExBinaryClassifier1())
         self.ensemble.add_model(ExBinaryClassifier0())
@@ -97,20 +97,20 @@ class TestEnsembleBinaryClassifier0(TestEnsembleBinaryClassifier1):
     answer = 0
 
     def setup(self):
-        self.ensemble = ens.EnsembleBinaryClassifier()
+        self.ensemble = ens.base.EnsembleBinaryClassifier()
         self.ensemble.add_model(ExBinaryClassifier1())
         self.ensemble.add_model(ExBinaryClassifier0())
         self.ensemble.add_model(ExBinaryClassifier0())
 
 class TestEnsembleBinaryClassifierWeight1(TestEnsembleBinaryClassifier1):
     def setup(self):
-        self.ensemble = ens.EnsembleBinaryClassifier()
+        self.ensemble = ens.base.EnsembleBinaryClassifier()
         self.ensemble.add_model(ExBinaryClassifier1(), weight=2)
         self.ensemble.add_model(ExBinaryClassifier0(), weight=1)
 
 class TestEnsembleBinaryClassifierWeight0(TestEnsembleBinaryClassifier0):
     def setup(self):
-        self.ensemble = ens.EnsembleBinaryClassifier()
+        self.ensemble = ens.base.EnsembleBinaryClassifier()
         self.ensemble.add_model(ExBinaryClassifier1(), weight=1)
         self.ensemble.add_model(ExBinaryClassifier0(), weight=2)
 
