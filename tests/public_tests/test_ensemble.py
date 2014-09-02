@@ -4,6 +4,8 @@ import numpy as np
 from nose.tools import raises
 
 import simpleml.ensemble as ens
+from simpleml import metrics
+from test_dectree import X_TRAIN, LABELS_TRAIN, X_TEST, LABELS_TEST
 
 # Simple classifiers for testing
 class NotBinaryClassifier:  # pragma: no cover
@@ -190,4 +192,37 @@ class TestBaggingBinaryClassifier:
         bag = ens.BaggingBinaryClassifier(SimpleClassifier, **bag_params)
         bag.fit(self.X, self.Y)
         assert np.all(bag.classify(self.X) == self.Y)
+
+
+class TestRandomForestInit:
+    def test_init(self):
+        params = {
+            'min_obs_split':4, 'max_depth':3, 'objfunc':metrics.gini,
+            'max_features':2, 'n_models_fit':10, 'seed':2345
+        }
+        rfor = ens.RandomForest(**params)
+
+        assert rfor.params == params
+
+    @raises(ValueError)
+    def test_init_bad_max_features(self):
+        ens.RandomForest(max_features=0)
+
+    def test_fit(self):
+        rfor = ens.RandomForest(max_features=2, seed=45345)
+        rfor.fit(X_TRAIN, LABELS_TRAIN)
+
+class TestRandomForest:
+    def setup(self):
+        self.rfor = ens.RandomForest(max_features=2, seed=45345)
+        self.rfor.fit(X_TRAIN, LABELS_TRAIN)
+
+    def test_errors(self):
+        assert 0. <= self.rfor.oob_error <= 1.
+        assert 0. <= self.rfor.test_err(X_TEST, LABELS_TEST) <= 1.
+
+    def test_model_params(self):
+        assert len(self.rfor.models) == self.rfor.n_models_fit == 10
+        for model in self.rfor.models:
+            assert model.max_features == 2
 

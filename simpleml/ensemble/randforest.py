@@ -29,6 +29,9 @@ class RandomForest(BaggingBinaryClassifier):
     '''
     def __init__(self, min_obs_split=2, max_depth=None, objfunc=metrics.gini,
                  max_features=10, n_models_fit=10, seed=None):
+        if max_features <= 0:
+            raise ValueError('max_features must be positive.')
+
         model_params = {
             'min_obs_split': min_obs_split,
             'max_depth': max_depth,
