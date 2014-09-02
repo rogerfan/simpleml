@@ -36,7 +36,17 @@ class RandomForest(BaggingBinaryClassifier):
             'max_features': max_features
         }
 
-        super(type(self), self).__init__(
+        super().__init__(
             DecisionTree, model_params=model_params, n_models_fit=n_models_fit,
             seed=seed
         )
+
+    @property
+    def params(self):
+        result = {}
+        for name in self._bag_params_names:
+            if name != 'model_params':
+                result[name] = getattr(self, name)
+        for key, val in self.model_params.items():
+            result[key] = val
+        return result
