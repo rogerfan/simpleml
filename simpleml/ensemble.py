@@ -81,7 +81,7 @@ class EnsembleBinaryClassifier:
         return np.mean(self.classify(X) != Y)
 
 class BaggingBinaryClassifier(EnsembleBinaryClassifier):
-    bag_params_names = ('model_params', 'n_models_fit', 'seed')
+    _bag_params_names = ('model_params', 'n_models_fit', 'seed')
 
     def __init__(self, binaryclassifiercls, model_params=None, n_models_fit=10,
                  seed=None):
@@ -94,14 +94,13 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
         self.n_models_fit = n_models_fit
         self.seed = seed
 
-        self._obs_used = []
+        self.obs_used = []
         self._oob_error = None
-        self._oob_num = None
 
     @property
     def params(self):
         result = {}
-        for name in self.bag_params_names:
+        for name in self._bag_params_names:
             result[name] = getattr(self, name)
         return result
 
@@ -113,7 +112,8 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
 
     def fit(self, X, Y):
         '''
-        Fit the bagged classifier using training data.
+        Fit the bagged classifier using training data and calculates the
+        out-of-bag fitting error.
 
         Parameters
         ----------
@@ -122,10 +122,12 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
         Y : array of shape (n_samples)
             Labels for training.
         '''
-        self._oob_error = 0
-        self._oob_num = 0
+        if self.seed is not None:
+            np.random.seed(self.seed)
 
         num_obs = len(X)
+        oob_votes_num = np.zeros(len(Y))
+        oob_votes_for = np.zeros(len(Y))
         for i in range(self.n_models_fit):
             curr_ind = np.random.choice(num_obs, num_obs)
             curr_X = X[curr_ind]
@@ -136,23 +138,16 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
             self.add_model(curr_model)
 
             obs_used = np.unique(curr_ind)
-            self._obs_used.append(obs_used)
+            self.obs_used.append(obs_used)
 
-            # This is the wrong oob error. I should be classifying each obs
-            # using all the trees that don't use it, taking a vote with those
-            # trees (about 1/3rd), then using those voted classifications
-            # to get an error. This more accurately is predicting the error
-            # for a single tree, not for the forest.
             obs_not_used = np.setdiff1d(np.arange(num_obs), obs_used,
                                         assume_unique=True)
-            curr_oob_error = curr_model.test_err(curr_X[obs_not_used],
-                                                 curr_Y[obs_not_used])
+            oob_votes_num[obs_not_used] += 1
+            oob_votes_for[obs_not_used] += curr_model.classify(X[obs_not_used])
 
-            curr_oob_num = len(obs_not_used)
-
-            self._oob_num += curr_oob_num
-            self._oob_error = (self._oob_error*self._oob_num +
-                               curr_oob_error*curr_oob_num) / self._oob_num
+        oob_obs = oob_votes_num > 0
+        oob_mean_votes = (oob_votes_for[oob_obs]/oob_votes_num[oob_obs]) >= .5
+        self._oob_error = np.mean(oob_mean_votes != Y[oob_obs])
 
         return self
 
