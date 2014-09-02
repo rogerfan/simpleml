@@ -1,5 +1,5 @@
 '''
-Bagging meta-estimators.
+Bagging meta-classifiers.
 '''
 import numpy as np
 
@@ -7,6 +7,20 @@ from .base import EnsembleBinaryClassifier
 
 
 class BaggingBinaryClassifier(EnsembleBinaryClassifier):
+    '''
+    Bagging binary classifier.
+
+    Parameters
+    ----------
+    binaryclassifiercls : object
+        Binary classifier used to create the bagging classifier.
+    model_params : dict [None]
+        Dictionary of named arguments that are used by binaryclassifiercls.
+    n_models_fit : int [10]
+        Number of bagging estimators to fit.
+    seed : int [None]
+        If provided, seeds the random number generator.
+    '''
     _bag_params_names = ('model_params', 'n_models_fit', 'seed')
 
     def __init__(self, binaryclassifiercls, model_params=None, n_models_fit=10,
