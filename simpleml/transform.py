@@ -34,39 +34,42 @@ class PCA:
 
     Parameters
     ----------
-    X : ndarray
-        Training data to estimate PCA on.
     num_comp : int [None]
         Number of principle components to use. If not provided, will default
         to min(num_samples, num_variables).
-
-    Attributes
-    ----------
-    Vt : ndarray
-        The transpose of the principle component weights.
     '''
-    def __init__(self, X, num_comp=None):
-        if num_comp is None:
+    def __init__(self, num_comp=None):
+        self.num_comp = num_comp
+
+    def fit(self, X):
+        '''
+        Fit the principle components model.
+
+        Parameters
+        ----------
+        X : ndarray
+            X matrix to extract principle components from.
+        '''
+        if self.num_comp is None:
             self.num_comp = min(X.shape)
-        else:
-            if num_comp > min(X.shape):
-                raise ValueError("Number of components cannot be more than the"
-                                 " number of variables or obs.")
-            self.num_comp = num_comp
-        self.X = X
+        if self.num_comp > min(X.shape):
+            raise ValueError("Number of components cannot be more than the"
+                             " number of variables or observations.")
 
         U, S, Vt = svd(X, full_matrices=False)
         self.Vt = Vt
+        self._var_num = X.shape[1]
 
-    def transform(self, X=None, num_comp=None):
+        return self
+
+    def transform(self, X, num_comp=None):
         '''
         Apply dimensionality reduction.
 
         Parameters
         ----------
-        X : ndarray [None]
-            X matrix to apply dimensionality reduction to. Will use the
-            training data if not provided.
+        X : ndarray
+            X matrix to apply dimensionality reduction to.
         num_comp : ndarray [None]
             Number of principle components to use. If not provided, will use
             the number provided when initializing the PCA object.
@@ -76,16 +79,16 @@ class PCA:
         X_new : ndarray
             Transformed array of shape (num_samples, num_comp).
         '''
-        X, num_comp = self._which_params_to_use(X, num_comp)
+        num_comp = self._verify_inputs(num_comp, X)
         return np.dot(X, self.Vt[:num_comp].T)
 
-    def project(self, X=None, num_comp=None):
+    def project(self, X, num_comp=None):
         '''
         Project onto the principle components.
 
         Parameters
         ----------
-        X : ndarray [None]
+        X : ndarray
             X matrix to project. Will use the training data if not provided.
         num_comp : ndarray [None]
             Number of principle components to use. If not provided, will use
@@ -97,18 +100,19 @@ class PCA:
             Projected array of shape (num_samples, num_variables), the same
             shape as X.
         '''
-        X, num_comp = self._which_params_to_use(X, num_comp)
+        num_comp = self._verify_inputs(num_comp, X)
         return np.dot(np.dot(X, self.Vt[:num_comp].T),
                       self.Vt[:num_comp])
 
-    def _which_params_to_use(self, X, num_comp):
-        if X is None:
-            X = self.X
+    def _verify_inputs(self, num_comp, X):
+        if np.atleast_2d(X).shape[1] != self._var_num:
+            raise ValueError("Number of variables for input data ({}) not the "
+                             "same as training data ({})"
+                             ".".format(X.shape[1], self._var_num))
         if num_comp is None:
             num_comp = self.num_comp
-
-        if num_comp > min(self.X.shape):
+        if num_comp > self._var_num:
             raise ValueError("Number of components cannot be more than the "
                              "number of variables or obs in training data.")
 
-        return X, num_comp
+        return num_comp

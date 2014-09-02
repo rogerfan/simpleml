@@ -56,72 +56,80 @@ class TestStandardize:
 
 class TestPCA:
     def test_init_nonum(self):
-        pca = tf.PCA(DATA1)
+        pca = tf.PCA().fit(DATA1)
         assert pca.num_comp == DATA1.shape[1]
 
     def test_init_withnum(self):
-        pca = tf.PCA(DATA1, 2)
+        pca = tf.PCA(num_comp=2)
         assert pca.num_comp == 2
 
     @raises(ValueError)
     def test_init_vec(self):
-        tf.PCA(np.array([1, 2, 3]))
+        tf.PCA().fit(np.array([1, 2, 3]))
 
     @raises(ValueError)
     def test_init_nan(self):
-        tf.PCA(np.array([[1, 2, 3], [1, np.nan, 3]]))
+        tf.PCA().fit(np.array([[1, 2, 3], [1, np.nan, 3]]))
 
     @raises(ValueError)
     def test_init_inf(self):
-        tf.PCA(np.array([[1, 2, 3], [1, np.inf, 3]]))
+        tf.PCA().fit(np.array([[1, 2, 3], [1, np.inf, 3]]))
 
     @raises(ValueError)
     def test_init_numtoobig(self):
-        tf.PCA(DATA1, 8)
+        tf.PCA(num_comp=8).fit(DATA1)
 
     def test_project_allcomp_self(self):
-        assert np.allclose(DATA1, tf.PCA(DATA1).project())
+        assert np.allclose(DATA1, tf.PCA().fit(DATA1).project(DATA1))
 
     def test_project_allcomp_other(self):
-        assert np.allclose(DATA2, tf.PCA(DATA1).project(DATA2))
+        assert np.allclose(DATA2, tf.PCA().fit(DATA1).project(DATA2))
 
     def test_project_allcomp_vec(self):
         vec = np.array([1, 2, 3, 4])
-        assert np.allclose(vec, tf.PCA(DATA1).project(vec))
+        assert np.allclose(vec, tf.PCA().fit(DATA1).project(vec))
 
     def test_project_shape1(self):
-        data_proj = tf.PCA(DATA1, num_comp=2).project()
+        data_proj = tf.PCA(num_comp=2).fit(DATA1).project(DATA1)
         assert data_proj.shape == DATA1.shape
 
     def test_project_shape2(self):
-        data_proj = tf.PCA(DATA1).project(DATA2, num_comp=2)
+        data_proj = tf.PCA().fit(DATA1).project(DATA2, num_comp=2)
         assert data_proj.shape == DATA2.shape
 
     @raises(ValueError)
+    def test_project_diff_shape(self):
+        tf.PCA().fit(DATA1).project(DATA2[:,:2])
+
+    @raises(ValueError)
     def test_project_numtoobig(self):
-        tf.PCA(DATA1).project(num_comp=8)
+        tf.PCA().fit(DATA1).project(DATA1, num_comp=8)
 
     def test_transform_allcomp_self(self):
-        data_trans = tf.PCA(DATA1).transform()
+        data_trans = tf.PCA().fit(DATA1).transform(DATA1)
         assert data_trans.shape == DATA1.shape
 
     def test_transform_allcomp_other(self):
-        data_trans = tf.PCA(DATA1).transform(DATA2)
+        data_trans = tf.PCA().fit(DATA1).transform(DATA2)
         assert data_trans.shape == DATA2.shape
 
     def test_transform_allcomp_vec(self):
         vec = np.array([1, 2, 3, 4])
-        data_trans = tf.PCA(DATA1).transform(vec)
+        data_trans = tf.PCA().fit(DATA1).transform(vec)
         assert data_trans.shape == vec.shape
 
     def test_transform_shape1(self):
-        data_trans = tf.PCA(DATA1, num_comp=2).transform()
+        data_trans = tf.PCA(num_comp=2).fit(DATA1).transform(DATA1)
         assert data_trans.shape == (DATA1.shape[0], 2)
 
     def test_transform_shape2(self):
-        data_trans = tf.PCA(DATA1).transform(DATA2, num_comp=2)
+        data_trans = tf.PCA().fit(DATA1).transform(DATA2, num_comp=2)
         assert data_trans.shape == (DATA2.shape[0], 2)
 
     @raises(ValueError)
+    def test_transform_diff_shape(self):
+        tf.PCA().fit(DATA1).transform(DATA2[:,:2])
+
+    @raises(ValueError)
     def test_transform_numtoobig(self):
-        tf.PCA(DATA1).transform(num_comp=8)
+        tf.PCA().fit(DATA1).transform(DATA1, num_comp=8)
