@@ -21,7 +21,7 @@ def _choose_split(data, labels, objfunc, max_features=None):
     for cand_var in vars_to_consider:
         uniquelist = np.unique(data[:, cand_var])
 
-        if len(uniquelist) > obs_num*0.2:  # Continuous case
+        if len(uniquelist) > obs_num*0.5:  # Continuous case
             sorted_rows = data[:, cand_var].argsort()
             labels_sorted = labels[sorted_rows]
 
