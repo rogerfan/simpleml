@@ -21,7 +21,9 @@ def _choose_split(data, labels, objfunc, max_features=None):
     for cand_var in vars_to_consider:
         uniquelist = np.unique(data[:, cand_var])
 
-        if len(uniquelist) > obs_num*0.5:  # Continuous case
+        use_categorical = True
+
+        if len(uniquelist) > obs_num*0.25:  # Continuous case
             sorted_rows = data[:, cand_var].argsort()
             labels_sorted = labels[sorted_rows]
 
@@ -40,7 +42,14 @@ def _choose_split(data, labels, objfunc, max_features=None):
                 min_obj = min_cand_obj
                 min_split = (cand_var,
                              data[sorted_rows[min_cand_ind+1], cand_var])
-        else:  # Categorical case
+
+            if np.isclose(data[sorted_rows[min_cand_ind], cand_var],
+                          uniquelist[0]):
+                use_categorical = True
+            else:
+                use_categorical = False
+
+        if use_categorical:  # Categorical case
             for cand_split in uniquelist[1:]:
                 subset0 = labels[data[:,cand_var] <  cand_split]
                 subset1 = labels[data[:,cand_var] >= cand_split]
