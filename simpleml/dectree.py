@@ -7,6 +7,8 @@ import numpy as np
 
 from . import metrics
 
+__all__ = ('DecisionTree',)
+
 
 def _choose_split(data, labels, objfunc, max_features=None):
     min_obj = np.inf

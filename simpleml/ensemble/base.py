@@ -5,6 +5,8 @@ import numpy as np
 
 from .. import baseclasses as bc
 
+__all__ = ()
+
 
 class EnsembleBinaryClassifier:
     '''

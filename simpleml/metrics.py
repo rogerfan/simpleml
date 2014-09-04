@@ -4,6 +4,9 @@ Metric functions.
 import numpy as np
 import numexpr as ne
 
+__all__ = ('entropy', 'gini', 'misclass', 'tanh', 'logistic')
+
+
 # Purity measures for binary variables.
 def entropy(prop):
     return ne.evaluate('where((prop != 0) & (prop != 1),'

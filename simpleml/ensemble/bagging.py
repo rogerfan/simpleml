@@ -7,6 +7,8 @@ import numpy as np
 
 from .base import EnsembleBinaryClassifier
 
+__all__ = ('BaggingBinaryClassifier',)
+
 
 class BaggingBinaryClassifier(EnsembleBinaryClassifier):
     '''

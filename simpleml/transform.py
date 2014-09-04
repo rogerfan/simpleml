@@ -4,6 +4,8 @@ Data transformations.
 import numpy as np
 from scipy.linalg import svd
 
+__all__ = ('standardize', 'PCA')
+
 
 def standardize(X):
     '''

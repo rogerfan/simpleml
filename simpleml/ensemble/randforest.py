@@ -5,6 +5,8 @@ from .bagging import BaggingBinaryClassifier
 from .. import metrics
 from ..dectree import DecisionTree
 
+__all__ = ('RandomForest',)
+
 
 class RandomForest(BaggingBinaryClassifier):
     '''
