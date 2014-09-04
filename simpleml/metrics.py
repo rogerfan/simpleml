@@ -17,3 +17,19 @@ def misclass(prop):
         return ne.evaluate('where(prop <= 0.5, prop, 1-prop)')
     else:  # Numexpr is slower for small arrays (tested on i7-3770)
         return np.where(prop <= 0.5, prop, 1-prop)
+
+# Sigmoid functions with derivatives
+class tanh:
+    def f(self, x):
+        return np.tanh(x)
+    def d(self, x):
+        return 1. - x**2
+tanh = tanh()
+
+class logistic:
+    def f(self, x):
+        return 1. / (1. + np.exp(-x))
+    def d(self, x):
+        f = self.f(x)
+        return f*(1.-f)
+logistic = logistic()
