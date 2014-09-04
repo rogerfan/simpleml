@@ -38,16 +38,15 @@ def _choose_split(data, labels, objfunc, max_features=None):
 
             min_cand_ind = np.argmin(cand_objs)
             min_cand_obj = cand_objs[min_cand_ind]
-            if min_cand_obj < min_obj:
-                min_obj = min_cand_obj
-                min_split = (cand_var,
-                             data[sorted_rows[min_cand_ind+1], cand_var])
 
-            if np.isclose(data[sorted_rows[min_cand_ind], cand_var],
-                          uniquelist[0]):
-                use_categorical = True
-            else:
+            if not np.isclose(data[sorted_rows[min_cand_ind], cand_var],
+                              uniquelist[0]):
                 use_categorical = False
+
+                if min_cand_obj < min_obj:
+                    min_obj = min_cand_obj
+                    min_split = (cand_var,
+                                 data[sorted_rows[min_cand_ind+1], cand_var])
 
         if use_categorical:  # Categorical case
             for cand_split in uniquelist[1:]:
