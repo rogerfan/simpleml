@@ -13,7 +13,7 @@ def gini(prop):
     return prop*(1-prop)
 
 def misclass(prop):
-    if hasattr(prop, '__len__') and len(prop) > 2000:
+    if hasattr(prop, '__len__') and len(prop) > 5000:
         return ne.evaluate('where(prop <= 0.5, prop, 1-prop)')
     else:  # Numexpr is slower for small arrays (tested on i7-3770)
         return np.where(prop <= 0.5, prop, 1-prop)
