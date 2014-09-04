@@ -6,6 +6,7 @@ import pickle
 import gzip
 
 import numpy as np
+from sklearn.linear_model import LogisticRegression
 
 # %cd C:/Users/g1rxf01/Downloads/New folder/simpleml
 
@@ -24,19 +25,26 @@ for name, dataset in zip(names, (train_set, valid_set, test_set)):
     cond = np.logical_or(dataset[1] == 0, dataset[1] == 1)
     data[name] = (dataset[0][cond], dataset[1][cond])
 
-rforest = RandomForest(min_obs_split=10, max_depth=5, max_features=28,
+rforest = RandomForest(min_obs_split=20, max_depth=10, max_features=28,
                    n_models_fit=30, seed=2349634)
-dtree = DecisionTree(min_obs_split=10, max_depth=10, seed=2349634)
+dtree = DecisionTree(min_obs_split=20, max_depth=10, seed=2349634)
 
-start = time.clock()
-rforest.fit(data['train'][0][:2000], data['train'][1][:2000])
-print("Forest time: {:6.2f}".format(time.clock() - start))
+start = time.perf_counter()
+rforest.fit(*data['train'], verbose=True)
+print("Forest time: {:6.2f}".format(time.perf_counter() - start))
 
-start = time.clock()
-dtree.fit(data['train'][0][:2000], data['train'][1][:2000])
-print("Tree time: {:6.2f}".format(time.clock() - start))
+start = time.perf_counter()
+dtree.fit(*data['train'])
+print("Tree time:   {:6.2f}".format(time.perf_counter() - start))
 
-print("Errors:")
-print(rforest.oob_error)
-print(rforest.test_err(data['test'][0], data['test'][1]))
-print(dtree.test_err(data['test'][0], data['test'][1]))
+start = time.perf_counter()
+logit = LogisticRegression(random_state=2349634).fit(*data['train'])
+print("Logit time:  {:6.2f}".format(time.perf_counter() - start))
+
+
+print("\nErrors:")
+print("Forest (oob):  {:.5f}".format(rforest.oob_error))
+print("Forest (test): {:.5f}".format(rforest.test_err(*data['test'])))
+print("Tree   (test): {:.5f}".format(dtree.test_err(*data['test'])))
+print("Logit  (test): {:.5f}".format(
+    np.mean(logit.predict(data['test'][0]) != data['test'][1])))
