@@ -171,6 +171,11 @@ class TestBaggingBinaryClassifier:
         assert bag.params == bag_params
         assert bag.n_models == bag_params['n_models_fit'] == bag.n_models_fit
 
+    def test_fit_verbose(self):
+        bag_params = {'model_params': {'ind': 0}, 'n_models_fit': 10, 'seed': 23}
+        bag = ens.BaggingBinaryClassifier(SimpleClassifier, **bag_params)
+        bag.fit(self.X, self.Y, verbose=True)
+
     def test_oob_error(self):
         bag = ens.BaggingBinaryClassifier(SimpleClassifier, seed=25)
         bag.fit(self.X, self.Y)
