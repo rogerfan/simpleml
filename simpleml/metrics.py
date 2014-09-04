@@ -26,7 +26,7 @@ class tanh:
     def f(self, x):
         return np.tanh(x)
     def d(self, x):
-        return 1. - x**2
+        return 1. - np.tanh(x)**2
 tanh = tanh()
 
 class logistic:
