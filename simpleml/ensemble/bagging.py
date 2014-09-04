@@ -1,6 +1,8 @@
 '''
 Bagging meta-classifiers.
 '''
+import sys
+
 import numpy as np
 
 from .base import EnsembleBinaryClassifier
@@ -50,7 +52,7 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
             raise AttributeError('Model has not been fitted yet.')
         return self._oob_error
 
-    def fit(self, X, Y):
+    def fit(self, X, Y, verbose=False):
         '''
         Fit the bagged classifier using training data and calculates the
         out-of-bag fitting error.
@@ -84,6 +86,12 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
                                         assume_unique=True)
             oob_votes_num[obs_not_used] += 1
             oob_votes_for[obs_not_used] += curr_model.classify(X[obs_not_used])
+
+            if verbose:
+                sys.stdout.write(".")
+                if (i % 10) == 9:
+                    sys.stdout.write("\n")
+                sys.stdout.flush()
 
         oob_obs = oob_votes_num > 0
         oob_mean_votes = (oob_votes_for[oob_obs]/oob_votes_num[oob_obs]) >= .5
