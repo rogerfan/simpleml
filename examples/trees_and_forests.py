@@ -1,6 +1,7 @@
 '''
 Example of how to use Decision Trees and Random Forests.
 '''
+import os, sys
 import time
 import pickle
 import gzip
@@ -9,6 +10,7 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 
 # %cd C:/Users/g1rxf01/Downloads/New folder/simpleml/examples
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 from simpleml.dectree import DecisionTree
 from simpleml.ensemble import RandomForest
