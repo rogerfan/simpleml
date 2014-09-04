@@ -5,7 +5,7 @@ from nose.tools import raises
 
 import simpleml.ensemble as ens
 from simpleml import metrics
-from test_dectree import X_TRAIN, LABELS_TRAIN, X_TEST, LABELS_TEST
+from .test_dectree import X_TRAIN, LABELS_TRAIN, X_TEST, LABELS_TEST
 
 # Simple classifiers for testing
 class NotBinaryClassifier:  # pragma: no cover

@@ -14,14 +14,15 @@ else:
     args = parser.parse_args(sys.argv)
 
 argv = ['', '--with-coverage', '--cover-erase',
-        '--cover-tests', '--cover-html']
+        '--cover-tests', '--cover-html', '--cover-package=simpleml']
 if args.verbose:
     argv.append('-v')
-if args.tests or args.public:
-    argv.append('--cover-package="simpleml,tests"')
-    if args.public:
-        argv.append('./tests/public_tests')
+
+if args.tests:
+    argv.append('--cover-package=tests')
+if args.public:
+    argv.append('./tests/public_tests')
 else:
-    argv.append('--cover-package=simpleml')
+    argv.append('./tests/')
 
 nose.main(argv=argv)
