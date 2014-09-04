@@ -1,5 +1,5 @@
 '''
-Example of how to use Decision Trees and PCA in simpleml.
+Example of how to use Decision Trees and Random Forests.
 '''
 import time
 import pickle
@@ -8,13 +8,13 @@ import gzip
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 
-# %cd C:/Users/g1rxf01/Downloads/New folder/simpleml
+# %cd C:/Users/g1rxf01/Downloads/New folder/simpleml/examples
 
 from simpleml.dectree import DecisionTree
 from simpleml.ensemble import RandomForest
 
 # Load data
-with gzip.open('./data/mnist.pkl.gz', 'rb') as f:
+with gzip.open('../data/mnist.pkl.gz', 'rb') as f:
     u = pickle._Unpickler(f)
     u.encoding = 'latin1'
     train_set, valid_set, test_set = u.load()
