@@ -27,7 +27,7 @@ class EnsembleBinaryClassifier:
         self.n_models = 0
         self.weights = []
 
-    def add_model(self, model, weight=1):
+    def add_model(self, model, weight=1.):
         '''
         Adds a model to the ensemble.
 
@@ -37,8 +37,8 @@ class EnsembleBinaryClassifier:
             An object that satisifes the baseclasses.BinaryClassifier abstract
             base class. Must have methods 'fit', 'classify', and 'test_err'.
             Should already be fitted.
-        weight : float [1]
-            Relative weight when voting.
+        weight : float, optional
+            Relative weight when voting (default 1.0).
         '''
         typename = type(model).__name__
         if not isinstance(model, bc.BinaryClassifier):

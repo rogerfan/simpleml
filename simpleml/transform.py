@@ -36,9 +36,9 @@ class PCA:
 
     Parameters
     ----------
-    num_comp : int [None]
-        Number of principle components to use. If not provided, will default
-        to min(num_samples, num_variables).
+    num_comp : int, optional
+        Number of principle components to use
+        (default min(num_samples, num_variables)).
     '''
     def __init__(self, num_comp=None):
         self.num_comp = num_comp
@@ -72,9 +72,8 @@ class PCA:
         ----------
         X : ndarray
             X matrix to apply dimensionality reduction to.
-        num_comp : ndarray [None]
-            Number of principle components to use. If not provided, will use
-            the number provided when initializing the PCA object.
+        num_comp : ndarray, optional
+            Number of principle components to use (default self.num_comp).
 
         Returns
         -------
@@ -92,9 +91,8 @@ class PCA:
         ----------
         X : ndarray
             X matrix to project. Will use the training data if not provided.
-        num_comp : ndarray [None]
-            Number of principle components to use. If not provided, will use
-            the number provided when initializing the PCA object.
+        num_comp : ndarray, optional
+            Number of principle components to use (default self.num_comp).
 
         Returns
         -------

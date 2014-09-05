@@ -73,34 +73,34 @@ class MultilayerPerceptron:
 
     Parameters
     ----------
-    num_inputs : int [2]
+    num_inputs : int, optional
         Number of input nodes to the system. Should be the same as the number
-        of features of input data (+1 if you use add_constant=True in the
-        fit method).
-    num_outputs : int [1]
+        of features of input data, +1 if you use add_constant=True in the
+        fit method (default 2).
+    num_outputs : int, optional
         Number of output nodes from the system. Should be the same as the number
-        of variables in the training output data.
-    num_hidden_layers : int [1]
-        Number of hidden layers to train.
-    num_hidden_nodes : int or list [3]
+        of variables in the training output data (default 1).
+    num_hidden_layers : int, optional
+        Number of hidden layers to train (default 1).
+    num_hidden_nodes : int or list, optional
         Number of nodes per hidden layer. If an int is provided then all the
         hidden layers will have that number of hidden nodes. If a list-like
         is provided then they will be mapped onto the corresponding layers
-        ordered from input to output.
-    epochnum : int [1000]
-        Number of epochs (passes through the entire dataset).
-    learn_rate : float [.5]
-        Learning rate for training.
-    momentum : float [.1]
-        Momentum parameter for training.
-    seed : int [None]
-        If provided, seeds the random number generator.
-    sigmoid : object [metrics.logistic]
+        ordered from input to output (default 3).
+    epochnum : int, optional
+        Number of epochs, i.e. passes through the entire dataset (default 1000).
+    learn_rate : float, optional
+        Learning rate for training (default 0.5).
+    momentum : float, optional
+        Momentum parameter for training (default 0.1).
+    seed : int, optional
+        Seeds the random number generator (default None).
+    sigmoid : object, optional
         Sigmoid function to use. Must have f and d methods for the function
-        and derivative values, respectively.
-    weight_init_range : float [.5]
+        and derivative values, respectively (default metrics.logistic).
+    weight_init_range : float, optional
         Weights are initalized from a uniform distribution between plus-minus
-        this value.
+        this value (default .5).
     '''
     params_names = (
         'num_inputs', 'num_outputs', 'num_hidden_layers', 'num_hidden_nodes',

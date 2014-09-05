@@ -188,19 +188,20 @@ class DecisionTree:
 
     Parameters
     ----------
-    min_obs_split : int [2]
-        Nodes with sizes less than this will not be split further.
-    max_depth : int [None]
+    min_obs_split : int, optional
+        Nodes with sizes less than this will not be split further (default 2).
+    max_depth : int, optional
         Maximum depth to grow the tree to.
-    objfunc : function [metrics.gini]
-        Objective function to minimize when selecting splits.
-    max_features : int [None]
+    objfunc : function, optional
+        Objective function to minimize when selecting splits
+        (default metrics.gini).
+    max_features : int, optional
         If provided, number of features to randomly choose to consider
-        at each split point
-    seed : int [None]
+        at each split point (default None).
+    seed : int, optional
         If provided, seeds the random number generator for use in random
         feature selection. Note that this does not do anything if
-        max_features is not set.
+        max_features is not set (default None).
 
     Attributes
     ----------

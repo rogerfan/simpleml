@@ -18,12 +18,13 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
     ----------
     binaryclassifiercls : object
         Binary classifier used to create the bagging classifier.
-    model_params : dict [None]
-        Dictionary of named arguments that are used by binaryclassifiercls.
-    n_models_fit : int [10]
-        Number of bagging estimators to fit.
-    seed : int [None]
-        If provided, seeds the random number generator.
+    model_params : dict, optional
+        Dictionary of named arguments that are used by binaryclassifiercls
+        (default {}).
+    n_models_fit : int, optional
+        Number of bagging estimators to fit (default 10).
+    seed : int, optional
+        If provided, seeds the random number generator (default 10).
     '''
     _bag_params_names = ('model_params', 'n_models_fit', 'seed')
 
@@ -65,6 +66,8 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
             Feature dataset for training.
         Y : array of shape (n_samples)
             Labels for training.
+        verbose : bool, optional
+            Print status during estimation.
         '''
         if self.seed is not None:
             np.random.seed(self.seed)
