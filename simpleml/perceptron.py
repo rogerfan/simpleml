@@ -34,7 +34,7 @@ class _Layer:
         with np_print_options(precision=5, suppress=True):
             result = "  {}\n{}".format(
                 str(self.weights).replace('\n', '\n  '),
-                self.activations
+                '[ ' + ' '.join(['x' for _ in range(self.num_nodes)]) + ' ]'
             )
         return result
 
@@ -143,7 +143,7 @@ class MultilayerPerceptron:
 
 
     def __str__(self):
-        result = '[ '+  ' '.join(['x' for _ in range(self.num_inputs)]) + ' ]'
+        result = '[ ' + ' '.join(['x' for _ in range(self.num_inputs)]) + ' ]'
         for l in self.layers:
             result += '\n' + str(l)
         return result
@@ -160,13 +160,57 @@ class MultilayerPerceptron:
         result.layers = deepcopy(self.layers)
         return result
 
-    def fit(self, X, Y, epochnum=1000):
+    def fit(self, X, Y, epochnum=1000, add_constant=False, verbose=False):
         '''
         Fit the multilayer perceptron using training data.
 
         Parameters
         ----------
+        X : array of shape (n_samples, n_features)
+            Feature dataset for training.
+        Y : array of shape (n_samples, n_outputs)
+            Output data for training.
         epochnum : int, optional
-            Number of epochs, i.e. passes through the entire dataset (default 1000).
+            Number of epochs, i.e. passes through the entire dataset
+            (default 1000).
+        add_constant : bool, optional
+            Set to True to add a column of ones to the front of the X data.
+        verbose : bool, optional
+            Print status during estimation.
         '''
-        pass
+        if self.seed is not None:
+            np.random.seed(self.seed)
+
+        num_obs = len(X)
+        if Y.ndim == 1:
+            Y = np.reshape(Y, (-1, 1))
+        if add_constant:
+            X = np.column_stack([np.ones(num_obs), X])
+
+        for i in range(epochnum):
+            order = np.random.choice(num_obs, size=num_obs, replace=False)
+            for ind in order:
+                error = 0.
+
+                targets = Y[ind]
+                inputs = X[ind]
+
+                pred = self.layers[0].update_activations(inputs)
+                self.layers[-1].backpropogate(
+                    inputs, targets-pred, self.learn_rate, self.momentum)
+
+                error += np.mean(np.abs(targets - pred))
+            if verbose and (i % 100) == 99:
+                print('{:>4}, error: {:.3e}'.format(i+1, error/num_obs))
+        return self
+
+    def predict_prob(self, X, add_constant=False):
+        if add_constant:
+            X = np.column_stack([np.ones(len(X)), X])
+
+        return self.layers[0].update_activations(X)
+
+    def classify(self, X, add_constant=False):
+        prob = self.predict_prob(X, add_constant=add_constant)
+        return (prob > .5).astype(int)
+
