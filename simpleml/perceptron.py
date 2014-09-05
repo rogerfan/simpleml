@@ -87,8 +87,6 @@ class MultilayerPerceptron:
         hidden layers will have that number of hidden nodes. If a list-like
         is provided then they will be mapped onto the corresponding layers
         ordered from input to output (default 3).
-    epochnum : int, optional
-        Number of epochs, i.e. passes through the entire dataset (default 1000).
     learn_rate : float, optional
         Learning rate for training (default 0.5).
     momentum : float, optional
@@ -104,18 +102,17 @@ class MultilayerPerceptron:
     '''
     params_names = (
         'num_inputs', 'num_outputs', 'num_hidden_layers', 'num_hidden_nodes',
-        'epochnum', 'learn_rate', 'momentum', 'seed', 'sigmoid',
+        'learn_rate', 'momentum', 'seed', 'sigmoid',
         'weight_init_range'
     )
 
     def __init__(self, num_inputs=2, num_outputs=1,
                  num_hidden_layers=1, num_hidden_nodes=3,
-                 epochnum=1000, learn_rate=.5, momentum=.1, seed=None,
+                 learn_rate=.5, momentum=.1, seed=None,
                  sigmoid=metrics.logistic, weight_init_range=.5):
 
         self.num_inputs = num_inputs
         self.num_outputs = num_outputs
-        self.epochnum = 1000
         self.learn_rate = .5
         self.momentum=.1
         self.seed = seed
@@ -162,3 +159,14 @@ class MultilayerPerceptron:
         result = MultilayerPerceptron(**self.params)
         result.layers = deepcopy(self.layers)
         return result
+
+    def fit(self, X, Y, epochnum=1000):
+        '''
+        Fit the multilayer perceptron using training data.
+
+        Parameters
+        ----------
+        epochnum : int, optional
+            Number of epochs, i.e. passes through the entire dataset (default 1000).
+        '''
+        pass

@@ -55,7 +55,7 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
             raise AttributeError('Model has not been fitted yet.')
         return self._oob_error
 
-    def fit(self, X, Y, verbose=False):
+    def fit(self, X, Y, fit_params=None, verbose=False):
         '''
         Fit the bagged classifier using training data and calculates the
         out-of-bag fitting error.
@@ -66,11 +66,16 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
             Feature dataset for training.
         Y : array of shape (n_samples)
             Labels for training.
+        fit_params : dict, optional
+            Dictionary of named arguments that are used by
+            binaryclassifiercls.fit (default {}).
         verbose : bool, optional
             Print status during estimation.
         '''
         if self.seed is not None:
             np.random.seed(self.seed)
+        if fit_params is None:
+            fit_params = {}
 
         num_obs = len(X)
         oob_votes_num = np.zeros(len(Y))
@@ -81,7 +86,7 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
             curr_Y = Y[curr_ind]
 
             curr_model = self.base_model(**self.model_params)
-            curr_model.fit(curr_X, curr_Y)
+            curr_model.fit(curr_X, curr_Y, **fit_params)
             self.add_model(curr_model)
 
             obs_used = np.unique(curr_ind)
