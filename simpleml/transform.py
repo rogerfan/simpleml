@@ -50,11 +50,26 @@ def to_dummies(x):
 def from_dummies(x, values=None):
     '''
     Convert a matrix of dummies to a 1-d array of categorical values.
+
+    Parameters
+    ----------
+    x : array
+        2-d array of dummy variables, so all 0s, with a single 1 per row.
+    values : list-like
+        Mapping to transform categorical variables with. If the dummy array
+        was created with to_dummies this should be the result of np.unique.
+        By default this effectively is range(num_unique_values).
     '''
-    if values is none:
+    if values is None:
         values = range(x.shape[1])
 
+    results = np.argmax(x, axis=1)
 
+    if values is not None:
+        for i, val in enumerate(values):
+            results[results == i] = val
+
+    return results
 
 
 class PCA:
