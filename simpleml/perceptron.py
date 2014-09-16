@@ -139,8 +139,8 @@ class MultilayerPerceptron:
 
         self.num_inputs = num_inputs
         self.num_outputs = num_outputs
-        self.learn_rate = .5
-        self.momentum=.1
+        self.learn_rate = learn_rate
+        self.momentum = momentum
         self.seed = seed
         self.sigmoid = sigmoid
         self.weight_init_range = weight_init_range
