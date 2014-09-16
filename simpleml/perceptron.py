@@ -247,7 +247,7 @@ class MultilayerPerceptron:
     def classify(self, X, add_constant=True, max_ind=False):
         prob = self.predict_prob(X, add_constant=add_constant)
         if max_ind:
-            return np.amax(prob, axis=0)
+            return np.argmax(prob, axis=1)
         else:
             return (prob > .5).astype(int)
 
