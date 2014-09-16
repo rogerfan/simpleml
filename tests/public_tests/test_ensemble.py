@@ -30,7 +30,7 @@ class SimpleClassifier:  # pragma: no cover
         self.ind = ind
         self.train_err = None
 
-    def fit(self, X, Y):
+    def fit(self, X, Y, param=None):
         self.param = (np.round(Y[X[:, self.ind] < 0].mean()),
                       np.round(Y[X[:, self.ind] >= 0].mean()))
 
@@ -170,6 +170,10 @@ class TestBaggingBinaryClassifier:
 
         assert bag.params == bag_params
         assert bag.n_models == bag_params['n_models_fit'] == bag.n_models_fit
+
+    def test_fit_param(self):
+        bag = ens.BaggingBinaryClassifier(SimpleClassifier)
+        bag.fit(self.X, self.Y, fit_params={'param': 2})
 
     def test_fit_verbose(self):
         bag_params = {'model_params': {'ind': 0}, 'n_models_fit': 10, 'seed': 23}
