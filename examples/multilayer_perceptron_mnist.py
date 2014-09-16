@@ -6,7 +6,8 @@ import gzip, pickle
 
 import numpy as np
 
-%cd C:/Users/g1rxf01/Downloads/New folder/simpleml/examples
+# %cd C:/Users/g1rxf01/Downloads/New folder/simpleml/examples
+# %cd M:/Libraries/Documents/Code/Python/simpleml/examples
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 from simpleml.perceptron import MultilayerPerceptron
@@ -37,4 +38,3 @@ mlp.fit(data['train'][0], to_dummies(data['train'][1]),
         epochnum=10, verbose=True)
 print("Time: {:6.2f}".format(time.perf_counter() - start))
 
-mlp.
