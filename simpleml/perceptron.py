@@ -191,7 +191,7 @@ class MultilayerPerceptron:
         result.layers = deepcopy(self.layers)
         return result
 
-    def fit(self, X, Y, epochnum=1000, add_constant=False, verbose=False):
+    def fit(self, X, Y, epochnum=1000, add_constant=True, verbose=False):
         '''
         Fit the multilayer perceptron using training data.
 
@@ -207,7 +207,8 @@ class MultilayerPerceptron:
             Number of epochs, i.e. passes through the entire dataset
             (default 1000).
         add_constant : bool, optional
-            Set to True to add a column of ones to the front of the X data.
+            Adds a column of ones to the front of the X data. Set to False
+            if your data already has a constant column (default True).
         verbose : bool, optional
             Print status during estimation.
         '''
@@ -237,13 +238,13 @@ class MultilayerPerceptron:
                 print('{:>4}, error: {:.3e}'.format(i+1, error/num_obs))
         return self
 
-    def predict_prob(self, X, add_constant=False):
+    def predict_prob(self, X, add_constant=True):
         if add_constant:
             X = np.column_stack([np.ones(len(X)), X])
 
         return self.layers[0].update_activations(X)
 
-    def classify(self, X, add_constant=False):
+    def classify(self, X, add_constant=True):
         prob = self.predict_prob(X, add_constant=add_constant)
         return (prob > .5).astype(int)
 
