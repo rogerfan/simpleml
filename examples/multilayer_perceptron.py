@@ -26,9 +26,13 @@ e = np.random.normal(1, size=num_obs)
 # Sinusoidal boundary
 y = (x[:,1]+e*.8 < .8+np.sin((x[:,0])*3)).astype(int)
 
+# # XOR
+# x = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+# y = np.array([0, 1, 1, 0])
 
-x0_min, x1_min = np.min(x, axis=0)
-x0_max, x1_max = np.max(x, axis=0)
+
+x0_min, x1_min = np.min(x, axis=0)-.5
+x0_max, x1_max = np.max(x, axis=0)+.5
 
 x0, x1 = np.meshgrid(np.linspace(x0_min, x0_max, 500),
                      np.linspace(x1_min, x1_max, 500))
@@ -39,10 +43,11 @@ mlp = MultilayerPerceptron(
     learn_rate=.5, momentum=.1, seed=23456
 )
 
+
 start = time.perf_counter()
 with PdfPages('example.pdf') as pdf:
     for i in range(0, 20):
-        mlp.fit(x, y, epochnum=10, add_constant=True, verbose=True)
+        mlp.fit(x, y, epochnum=15, add_constant=True)
         Z = mlp.classify(x_flatmesh, add_constant=True)
         Z = Z.reshape(x0.shape)
 
