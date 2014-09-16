@@ -12,35 +12,57 @@ __all__ = ('MultilayerPerceptron',)
 
 
 class _Layer:
-    def __init__(self, num_inputs, num_nodes, parent=None,
+    def __init__(self, num_inputs, num_nodes, parent=None, bias=True,
                  sigmoid=metrics.logistic, weight_init_range=.5):
         self.num_nodes = num_nodes
         self.num_inputs = num_inputs
         self.sigmoid = sigmoid
+        self.bias = bias
 
         self.parent = parent
         self.child = None
         if parent is not None:
             parent.child = self
 
-        self._activation_scores = np.zeros(num_nodes)
+        if bias:
+            num_nodes_nobias = num_nodes - 1
+        else:
+            num_nodes_nobias = num_nodes
+
+        self._activation_scores = np.zeros(num_nodes_nobias)
         self.activations = np.zeros(num_nodes)
+        if bias: self.activations[0] = 1
         self.weights = np.random.uniform(-weight_init_range, weight_init_range,
-                                         size=(num_inputs, num_nodes))
-        self._last_change = np.zeros((num_inputs, num_nodes))
-        self._deltas = np.zeros(num_nodes)
+                                         size=(num_inputs, num_nodes_nobias))
+        self._last_change = np.zeros((num_inputs, num_nodes_nobias))
+        self._deltas = np.zeros(num_nodes_nobias)
 
     def __str__(self):
+        layer_rep = ('[ ' +
+                     self.bias*'1 ' + (1-self.bias)*'x ' +
+                     ' '.join(['x' for _ in range(self.num_nodes-1)]) +
+                     (self.num_nodes > 1)*' ' +
+                     ']')
+
         with np_print_options(precision=5, suppress=True):
             result = "  {}\n{}".format(
                 str(self.weights).replace('\n', '\n  '),
-                '[ ' + ' '.join(['x' for _ in range(self.num_nodes)]) + ' ]'
+                layer_rep
             )
         return result
 
     def update_activations(self, inputs):
         self._activation_scores = np.dot(inputs, self.weights)
-        self.activations = self.sigmoid.f(self._activation_scores)
+        if self.bias:
+            if len(inputs.shape) == 1:
+                self.activations = np.append(
+                    [1], self.sigmoid.f(self._activation_scores))
+            else:
+                self.activations = np.hstack(
+                    [np.ones(len(inputs)).reshape(-1,1),
+                     self.sigmoid.f(self._activation_scores)])
+        else:
+            self.activations = self.sigmoid.f(self._activation_scores)
 
         if self.child is None:
             return self.activations
@@ -53,9 +75,13 @@ class _Layer:
         else:
             inputs = self.parent.activations
 
-        self._deltas = self.sigmoid.d(self._activation_scores)*errors
-        self._last_change = (np.outer(inputs, self._deltas) +
-                             momentum*self._last_change)
+        if self.bias:
+            self._deltas = self.sigmoid.d(self._activation_scores)*errors[1:]
+        else:
+            self._deltas = self.sigmoid.d(self._activation_scores)*errors
+
+        change = np.outer(inputs, self._deltas)
+        self._last_change = change + momentum*self._last_change
         self.weights += learn_rate*self._last_change
 
         if self.parent is None:
@@ -76,7 +102,7 @@ class MultilayerPerceptron:
     num_inputs : int, optional
         Number of input nodes to the system. Should be the same as the number
         of features of input data, +1 if you use add_constant=True in the
-        fit method (default 2).
+        fit method (default 3).
     num_outputs : int, optional
         Number of output nodes from the system. Should be the same as the number
         of variables in the training output data (default 1).
@@ -106,7 +132,7 @@ class MultilayerPerceptron:
         'weight_init_range'
     )
 
-    def __init__(self, num_inputs=2, num_outputs=1,
+    def __init__(self, num_inputs=3, num_outputs=1,
                  num_hidden_layers=1, num_hidden_nodes=3,
                  learn_rate=.5, momentum=.1, seed=None,
                  sigmoid=metrics.logistic, weight_init_range=.5):
@@ -133,17 +159,22 @@ class MultilayerPerceptron:
         lpars = {'sigmoid': sigmoid, 'weight_init_range': weight_init_range}
 
         self.layers = []
-        self.layers.append(_Layer(num_inputs, num_hidden_nodes[0], **lpars))
+        self.layers.append(_Layer(num_inputs, num_hidden_nodes[0],
+                                  bias=True, **lpars))
         for num_inp, num_nodes in zip(num_hidden_nodes[:-1],
                                       num_hidden_nodes[1:]):
-            self.layers.append(_Layer(num_inp, num_nodes,
-                                      parent=self.layers[-1], **lpars))
-        self.layers.append(_Layer(num_hidden_nodes[-1], num_outputs,
+            self.layers.append(
+                _Layer(num_inp, num_nodes,
+                       parent=self.layers[-1], bias=True, **lpars)
+            )
+        self.layers.append(_Layer(num_hidden_nodes[-1], num_outputs, bias=False,
                                   parent=self.layers[-1], **lpars))
 
 
     def __str__(self):
-        result = '[ ' + ' '.join(['x' for _ in range(self.num_inputs)]) + ' ]'
+        result = ('[ 1 ' +
+                  ' '.join(['x' for _ in range(self.num_inputs-1)]) +
+                  ' ]')
         for l in self.layers:
             result += '\n' + str(l)
         return result
@@ -167,7 +198,9 @@ class MultilayerPerceptron:
         Parameters
         ----------
         X : array of shape (n_samples, n_features)
-            Feature dataset for training.
+            Feature dataset for training. Either a constant column is required
+            or add_constant must be set to True. If there is already a constant
+            column then it must be the first column in X.
         Y : array of shape (n_samples, n_outputs)
             Output data for training.
         epochnum : int, optional

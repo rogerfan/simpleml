@@ -35,14 +35,14 @@ x0, x1 = np.meshgrid(np.linspace(x0_min, x0_max, 500),
 x_flatmesh = np.column_stack([x0.ravel(), x1.ravel()])
 
 mlp = MultilayerPerceptron(
-    num_inputs=3, num_outputs=1, num_hidden_layers=2, num_hidden_nodes=4,
+    num_inputs=3, num_outputs=1, num_hidden_layers=1, num_hidden_nodes=6,
     learn_rate=.5, momentum=.1, seed=23456
 )
 
 start = time.perf_counter()
 with PdfPages('example.pdf') as pdf:
     for i in range(0, 20):
-        mlp.fit(x, y, epochnum=5, add_constant=True, verbose=True)
+        mlp.fit(x, y, epochnum=10, add_constant=True, verbose=True)
         Z = mlp.classify(x_flatmesh, add_constant=True)
         Z = Z.reshape(x0.shape)
 
