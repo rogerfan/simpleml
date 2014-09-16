@@ -30,6 +30,33 @@ def standardize(X):
     return (X - means) / stdevs
 
 
+def to_dummies(x):
+    '''
+    Convert a 1-d array of categorical values to a 2-d array of dummies.
+
+    Note that the returned dummy matrix will have columns corresponding to
+    np.unique(x).
+    '''
+    unique_values = np.unique(x)
+    if len(unique_values) == len(x):
+        raise ValueError("Not a categorical array, all unique values")
+
+    columns = []
+    for val in unique_values:
+        columns.append(x == val)
+
+    return np.column_stack(columns).astype(int, copy=False)
+
+def from_dummies(x, values=None):
+    '''
+    Convert a matrix of dummies to a 1-d array of categorical values.
+    '''
+    if values is none:
+        values = range(x.shape[1])
+
+
+
+
 class PCA:
     '''
     Principle Components Analysis.
