@@ -42,7 +42,49 @@ class TestPurityLargeVector:
 
     def setup(self):
         np.random.seed(1254)
-        self.array_to_test = np.random.randint(0, 1, size=5000)
+        self.array_to_test = np.random.randint(0, 1, size=10000)
 
     def checker(self, func):
         func(self.array_to_test)
+
+
+class TestTanh:
+    values = (
+        1.5, 0.5,
+        np.array([1, 2, 3]),
+        np.array([[.1, .2], [.3, .4]]),
+    )
+
+    def test_f_vals(self):
+        for inp in self.values:
+            print(inp)
+            assert np.allclose(met.tanh.f(inp), np.tanh(inp))
+            assert np.allclose(-met.tanh.f(inp), np.tanh(-inp))
+
+    def test_d_vals(self):
+        for inp in self.values:
+            print(inp)
+            assert np.allclose(met.tanh.d(inp), np.cosh(inp)**-2)
+            assert np.allclose(met.tanh.d(-inp), np.cosh(-inp)**-2)
+
+class TestLogistic:
+    values = (
+        1.5, 0.5,
+        np.array([1, 2, 3]),
+        np.array([[.1, .2], [.3, .4]]),
+    )
+
+    def test_f_vals(self):
+        for inp in self.values:
+            print(inp)
+            assert np.allclose(met.logistic.f(inp), 1. / (1. + np.exp(-inp)))
+            assert np.allclose(met.logistic.f(-inp), 1. / (1. + np.exp(inp)))
+
+    def test_d_vals(self):
+        for inp in self.values:
+            print(inp)
+            assert np.allclose(met.logistic.d(inp),
+                               met.logistic.f(inp) * (1-met.logistic.f(inp)))
+            assert np.allclose(met.logistic.d(-inp),
+                               met.logistic.f(-inp) * (1-met.logistic.f(-inp)))
+

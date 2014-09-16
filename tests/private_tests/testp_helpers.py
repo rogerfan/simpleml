@@ -13,10 +13,12 @@ class TestNPPrintOptions:
         with helpers.np_print_options(precision=2):
             res = str(np.array([1.234234, 2.200003]))
 
-        assert res == '[ 1.23  2.20]'
+        print(res)
+        assert res == '[ 1.23  2.2 ]'
 
     def test_strip_zeros(self):
-        with helpers.np_print_options(precision=3):
-            res = str(np.array([1.200004, 2.200002]))
+        with helpers.np_print_options(strip_zeros=False, precision=2):
+            res = str(np.array([1.234234, 2.200003]))
 
-        assert res == '[ 1.2  2.2]'
+        print(res)
+        assert res == '[ 1.23  2.20]'
