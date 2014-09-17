@@ -54,6 +54,30 @@ class TestStandardize:
         tf.standardize(np.array([2, 2, 2]))
 
 
+class TestDummies:
+    original = np.array([0, 1, 1, 0])
+    replaced = np.array([2, 4, 4, 2])
+    dummied = np.array([[1, 0], [0, 1], [0, 1], [1, 0]])
+
+    def test_to_dummies(self):
+        assert np.allclose(tf.to_dummies(self.original), self.dummied)
+        assert np.allclose(tf.to_dummies(self.replaced), self.dummied)
+
+    @raises(ValueError)
+    def test_to_dummies_all_unique(self):
+        tf.to_dummies(np.array([1, 2, 3, 4]))
+
+    @raises(ValueError)
+    def test_to_dummies_nan(self):
+        tf.to_dummies(np.array([1, 3, 3, 1, np.nan]))
+
+    def test_from_dummies(self):
+        assert np.allclose(tf.from_dummies(self.dummied), self.original)
+
+    def test_from_dummies_values(self):
+        assert np.allclose(tf.from_dummies(self.dummied, values=[2, 4]),
+                           self.replaced)
+
 class TestPCA:
     def test_init_nonum(self):
         pca = tf.PCA().fit(DATA1)
