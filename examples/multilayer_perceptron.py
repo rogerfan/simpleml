@@ -1,5 +1,5 @@
 '''
-Example of how to use Decision Trees and Random Forests.
+Example of how to use Multilayer Perceptrons.
 '''
 import sys, os, time
 
