@@ -11,6 +11,14 @@ from .helpers import np_print_options
 __all__ = ('MultilayerPerceptron',)
 
 
+def _constant(i):
+    return 1
+def _linear(i):
+    return 1/(i+1)
+def _quadratic(i):
+    return 1/((i+1)**2)
+
+
 class _Layer:
     def __init__(self, num_inputs, num_nodes, parent=None, bias=True,
                  sigmoid=metrics.logistic, weight_init_range=.5):
@@ -115,6 +123,11 @@ class MultilayerPerceptron:
         ordered from input to output (default 3).
     learn_rate : float, optional
         Learning rate for training (default 0.5).
+    learn_rate_evol : function or {'constant', 'linear', 'quadratic'}
+        Learning rate evolution function that is multiplied by learn_rate.
+        Should be a single-input function that is defined for non-negative
+        integers, returns values between 0 and 1, and is weakly decreasing
+        (default 'linear').
     momentum : float, optional
         Momentum parameter for training (default 0.1).
     seed : int, optional
@@ -128,25 +141,37 @@ class MultilayerPerceptron:
     '''
     params_names = (
         'num_inputs', 'num_outputs', 'num_hidden_layers', 'num_hidden_nodes',
-        'learn_rate', 'momentum', 'seed', 'sigmoid',
+        'learn_rate', 'learn_rate_evol', 'momentum', 'seed', 'sigmoid',
         'weight_init_range'
     )
 
     def __init__(self, num_inputs=3, num_outputs=1,
                  num_hidden_layers=1, num_hidden_nodes=3,
-                 learn_rate=.5, momentum=.1, seed=None,
-                 sigmoid=metrics.logistic, weight_init_range=.5):
+                 learn_rate=.5, learn_rate_evol='linear', momentum=.1,
+                 seed=None, sigmoid=metrics.logistic, weight_init_range=.5):
 
+        self._fit_once = False
         self.num_inputs = num_inputs
         self.num_outputs = num_outputs
         self.learn_rate = learn_rate
         self.momentum = momentum
+        self.seed = seed
         self.sigmoid = sigmoid
         self.weight_init_range = weight_init_range
 
-        self.seed = seed
-        if seed is not None:
-            np.random.seed(seed)
+        if callable(learn_rate_evol):
+            self.learn_rate_evol = learn_rate_evol
+        elif learn_rate_evol == 'constant':
+            self.learn_rate_evol = _constant
+        elif learn_rate_evol == 'linear':
+            self.learn_rate_evol = _linear
+        elif learn_rate_evol == 'quadratic':
+            self.learn_rate_evol = _quadratic
+        else:
+            raise ValueError(
+                '{} is not a recognized learn_rate_evol.'.format(
+                    learn_rate_evol)
+            )
 
         self.num_hidden_layers = num_hidden_layers
         if isinstance(num_hidden_nodes, int):
@@ -218,6 +243,8 @@ class MultilayerPerceptron:
         '''
         if verbose is True:
             verbose = 50
+        if not self._fit_once and self.seed is not None:
+            np.random.seed(self.seed)
 
         num_obs = len(X)
         if Y.ndim == 1:
@@ -235,11 +262,15 @@ class MultilayerPerceptron:
 
                 pred = self.layers[0].update_activations(inputs)
                 self.layers[-1].backpropogate(
-                    inputs, targets-pred, self.learn_rate, self.momentum)
+                    inputs, targets-pred,
+                    self.learn_rate_evol(i)*self.learn_rate, self.momentum
+                )
 
                 error += np.mean(np.abs(targets - pred))
             if verbose and (i % verbose) == (verbose-1):
                 print('{:>4}, error: {:.3e}'.format(i+1, error/num_obs))
+
+        self._fit_once = True
         return self
 
     def predict_prob(self, X, add_constant=True):
