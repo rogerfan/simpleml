@@ -3,6 +3,7 @@ from nose.tools import raises
 
 from simpleml.perceptron import MultilayerPerceptron
 import simpleml.metrics as metrics
+from simpleml.transform import to_dummies
 from .test_dectree import X_TRAIN, LABELS_TRAIN
 
 
@@ -55,21 +56,21 @@ class TestMLPFit:
         mlp.fit(x, y, add_constant=True, epochnum=100, verbose=True)
 
         print(mlp.classify(x, add_constant=True))
-        assert(np.allclose(mlp.classify(x, add_constant=True).reshape(len(y)),
-                           y))
+        assert np.allclose(mlp.classify(x, add_constant=True).reshape(len(y)),
+                           y)
 
     def test_easy_multidim_y(self):
         x = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
-        y = np.array([[.5, 1], [1, 0], [0, 1], [.5, 0]])
+        y = np.array([[0, 1], [1, 0], [0, 1], [1, 0]])
 
         mlp = MultilayerPerceptron(
             num_inputs=3, num_outputs=2,
             num_hidden_layers=1, num_hidden_nodes=6, seed=323440,
             learn_rate = .8, momentum=.1
         )
-        mlp.fit(x, y, epochnum=20)
-        mlp.classify(x)
-
+        mlp.fit(x, y, epochnum=50)
+        results = mlp.classify(x, max_ind=True)
+        assert np.allclose(to_dummies(results), y)
 
     def test_fit(self):
         x = np.column_stack([np.ones(len(X_TRAIN)), X_TRAIN])
