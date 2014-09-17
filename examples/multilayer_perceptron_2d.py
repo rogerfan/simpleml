@@ -19,6 +19,7 @@ num_obs = 500
 x = np.random.normal(size=(num_obs, 2))
 e = np.random.normal(1, size=num_obs)
 
+
 # # Linear boundary with kink
 # y = np.logical_and(np.dot(x, [ 2,-3])+e < 4,
 #                    np.dot(x, [-3,-1])+e < 3).astype(int)
@@ -45,9 +46,9 @@ mlp = MultilayerPerceptron(
 
 
 start = time.perf_counter()
-with PdfPages('example.pdf') as pdf:
+with PdfPages('ex_mlp_2d.pdf') as pdf:
     for i in range(0, 20):
-        mlp.fit(x, y, epochnum=15, add_constant=True)
+        mlp.fit(x, y, epochnum=10, add_constant=True)
         Z = mlp.classify(x_flatmesh, add_constant=True)
         Z = Z.reshape(x0.shape)
 
