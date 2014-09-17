@@ -40,6 +40,8 @@ def to_dummies(x):
     unique_values = np.unique(x)
     if len(unique_values) == len(x):
         raise ValueError("Not a categorical array, all unique values")
+    if np.any(np.isnan(unique_values)):
+        raise ValueError("Input array cannot contain missing values.")
 
     columns = []
     for val in unique_values:
@@ -60,9 +62,6 @@ def from_dummies(x, values=None):
         was created with to_dummies this should be the result of np.unique.
         By default this effectively is range(num_unique_values).
     '''
-    if values is None:
-        values = range(x.shape[1])
-
     results = np.argmax(x, axis=1)
 
     if values is not None:
