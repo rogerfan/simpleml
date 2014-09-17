@@ -51,7 +51,7 @@ class TestMLPFit:
 
         mlp = MultilayerPerceptron(
             num_inputs=3, num_hidden_layers=1, num_hidden_nodes=6, seed=323440,
-            learn_rate = .8, momentum=.1
+            learn_rate = .8, learn_rate_evol='constant', momentum=.1
         )
         mlp.fit(x, y, add_constant=True, epochnum=100, verbose=True)
 
@@ -66,7 +66,7 @@ class TestMLPFit:
         mlp = MultilayerPerceptron(
             num_inputs=3, num_outputs=2,
             num_hidden_layers=1, num_hidden_nodes=6, seed=323440,
-            learn_rate = .8, momentum=.1
+            learn_rate = .8, learn_rate_evol='constant', momentum=.1
         )
         mlp.fit(x, y, epochnum=50)
         results = mlp.classify(x, max_ind=True)
