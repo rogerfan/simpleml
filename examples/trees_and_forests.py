@@ -16,16 +16,14 @@ from simpleml.dectree import DecisionTree
 from simpleml.ensemble import RandomForest
 
 # Load data
-with gzip.open('../data/mnist.pkl.gz', 'rb') as f:
-    u = pickle._Unpickler(f)
-    u.encoding = 'latin1'
-    train_set, valid_set, test_set = u.load()
+with gzip.open('../data/mnist.gz', 'rb') as f:
+    raw_data = pickle.load(f)
 
 data = {}
-names = ['train', 'valid', 'test']
-for name, dataset in zip(names, (train_set, valid_set, test_set)):
-    cond = np.logical_or(dataset[1] == 0, dataset[1] == 1)
-    data[name] = (dataset[0][cond], dataset[1][cond])
+for key, val in raw_data.items():
+    cond = np.logical_or(val[1] == 0, val[1] == 1)
+    data[key] = (val[0][cond], val[1][cond])
+
 
 rforest = RandomForest(min_obs_split=20, max_depth=10, max_features=28,
                    n_models_fit=30, seed=2349634)
