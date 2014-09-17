@@ -141,9 +141,12 @@ class MultilayerPerceptron:
         self.num_outputs = num_outputs
         self.learn_rate = learn_rate
         self.momentum = momentum
-        self.seed = seed
         self.sigmoid = sigmoid
         self.weight_init_range = weight_init_range
+
+        self.seed = seed
+        if seed is not None:
+            np.random.seed(seed)
 
         self.num_hidden_layers = num_hidden_layers
         if isinstance(num_hidden_nodes, int):
@@ -191,7 +194,7 @@ class MultilayerPerceptron:
         result.layers = deepcopy(self.layers)
         return result
 
-    def fit(self, X, Y, epochnum=1000, add_constant=True, verbose=False):
+    def fit(self, X, Y, epochnum=100, add_constant=True, verbose=False):
         '''
         Fit the multilayer perceptron using training data.
 
@@ -209,11 +212,12 @@ class MultilayerPerceptron:
         add_constant : bool, optional
             Adds a column of ones to the front of the X data. Set to False
             if your data already has a constant column (default True).
-        verbose : bool, optional
-            Print status during estimation.
+        verbose : bool/int, optional
+            Print status during estimation. If an int is provided, prints
+            status every verbose epochs.
         '''
-        if self.seed is not None:
-            np.random.seed(self.seed)
+        if verbose is True:
+            verbose = 50
 
         num_obs = len(X)
         if Y.ndim == 1:
@@ -234,7 +238,7 @@ class MultilayerPerceptron:
                     inputs, targets-pred, self.learn_rate, self.momentum)
 
                 error += np.mean(np.abs(targets - pred))
-            if verbose and (i % 100) == 99:
+            if verbose and (i % verbose) == (verbose-1):
                 print('{:>4}, error: {:.3e}'.format(i+1, error/num_obs))
         return self
 
