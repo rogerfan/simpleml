@@ -45,14 +45,14 @@ x_flatmesh = np.column_stack([x0.ravel(), x1.ravel()])
 # Setup estimator
 mlp = MultilayerPerceptron(
     num_inputs=3, num_outputs=1, num_hidden_layers=1, num_hidden_nodes=6,
-    learn_rate=.5, momentum=.1, seed=23456
+    learn_rate=.5, learn_rate_evol='linear', momentum=.1, seed=23456
 )
 
 # Estimate and plot
 start = time.perf_counter()
 with PdfPages('ex_mlp_2d.pdf') as pdf:
-    for i in range(0, 20):
-        mlp.fit(x, y, epochnum=10, add_constant=True)
+    for i in range(0, 25):
+        mlp.fit(x, y, epochnum=20, add_constant=True)
         Z = mlp.classify(x_flatmesh, add_constant=True)
         Z = Z.reshape(x0.shape)
 
