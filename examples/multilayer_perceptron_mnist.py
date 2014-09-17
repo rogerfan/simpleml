@@ -17,12 +17,14 @@ from simpleml.perceptron import MultilayerPerceptron
 from simpleml.transform import to_dummies
 
 
+# Load data
 with gzip.open('../data/mnist.gz', 'rb') as f:
     data = pickle.load(f)
 
 data = {key: (val[0], val[1], to_dummies(val[1])) for key, val in data.items()}
 
 
+# Setup estimator
 num_hidden_nodes = [101]
 mlp = MultilayerPerceptron(
     num_inputs=data['train'][0].shape[1]+1,
@@ -31,6 +33,7 @@ mlp = MultilayerPerceptron(
     learn_rate=.5, momentum=.1, seed=23456
 )
 
+# Estimate multilayer perceptron
 start = time.perf_counter()
 mlp.fit(data['train'][0], data['train'][2],
         epochnum=10, verbose=1)
@@ -41,6 +44,7 @@ print("Time: {:5.2f}, Error: {:5.4f}".format(
 ))
 
 
+# Visualize first hidden layer
 fig1 = plt.figure(figsize=(10, 10))
 for i in range(num_hidden_nodes[0]-1):
     side = np.sqrt(num_hidden_nodes[0]-1)
