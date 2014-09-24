@@ -75,10 +75,7 @@ class _Layer:
         else:
             self.activations = self.sigmoid.f(self._activation_scores)
 
-        if self.child is None:
-            return self.activations
-        else:
-            return self.child.update_activations(self.activations)
+        return self.activations
 
     def backpropogate(self, system_inputs, errors, learn_rate, momentum):
         if self.parent is None:
@@ -95,13 +92,7 @@ class _Layer:
         self._last_change = change + momentum*self._last_change
         self.weights += learn_rate*self._last_change
 
-        if self.parent is None:
-            return np.dot(self._deltas, self.weights.T)
-        else:
-            return self.parent.backpropogate(
-                system_inputs, np.dot(self._deltas, self.weights.T),
-                learn_rate, momentum
-            )
+        return np.dot(self._deltas, self.weights.T)
 
 
 class MultilayerPerceptron:
@@ -262,11 +253,16 @@ class MultilayerPerceptron:
                 curr_learn_rate = (self.learn_rate_evol(self.epochs_estimated)*
                                    self.learn_rate)
 
-                pred = self.layers[0].update_activations(inputs)
-                self.layers[-1].backpropogate(
-                    inputs, targets-pred,
-                    curr_learn_rate, self.momentum
-                )
+                # Update activations
+                pred = inputs
+                for l in self.layers:
+                    pred = l.update_activations(pred)
+
+                # Backpropogate errors
+                errors = targets - pred
+                for l in reversed(self.layers):
+                    errors = l.backpropogate(inputs, errors, curr_learn_rate,
+                                             self.momentum)
 
                 error += np.mean(np.abs(targets - pred))
             self.epochs_estimated += 1
@@ -279,7 +275,11 @@ class MultilayerPerceptron:
         if add_constant:
             X = np.column_stack([np.ones(len(X)), X])
 
-        return self.layers[0].update_activations(X)
+        pred = X
+        for l in self.layers:
+            pred = l.update_activations(pred)
+
+        return pred
 
     def classify(self, X, add_constant=True, max_ind=False):
         prob = self.predict_prob(X, add_constant=add_constant)
