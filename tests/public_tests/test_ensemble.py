@@ -207,7 +207,7 @@ class TestRandomForestInit:
     def test_init(self):
         params = {
             'min_obs_split':4, 'max_depth':3, 'objfunc':metrics.gini,
-            'max_features':2, 'n_models_fit':10, 'seed':2345
+            'max_features':2, 'n_models_fit':10, 'seed': None
         }
         rfor = ens.RandomForest(**params)
 
@@ -235,3 +235,14 @@ class TestRandomForest:
         for model in self.rfor.models:
             assert model.max_features == 2
 
+class TestRandomForestSeed:
+    def test_seed(self):
+        rfor0 = ens.RandomForest(max_features=2, seed=np.random.RandomState(45345))
+        rfor1 = ens.RandomForest(max_features=2, seed=np.random.RandomState(45345))
+        rfor0.fit(X_TRAIN, LABELS_TRAIN)
+        rfor1.fit(X_TRAIN, LABELS_TRAIN)
+
+        for dtree0, dtree1 in zip(rfor0.models, rfor1.models):
+            for desc0, desc1 in zip(dtree0.tree.descendents(),
+                                    dtree1.tree.descendents()):
+                assert desc0.split == desc1.split

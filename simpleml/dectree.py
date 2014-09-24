@@ -6,19 +6,20 @@ from copy import deepcopy
 import numpy as np
 
 from . import metrics
+from .helpers import check_random_state
 
 __all__ = ('DecisionTree',)
 
 
-def _choose_split(data, labels, objfunc, max_features=None):
+def _choose_split(data, labels, objfunc, max_features=None, randomstate=None):
     min_obj = np.inf
     obs_num = len(labels)
 
     if max_features is None:
         vars_to_consider = range(data.shape[1])
     else:
-        vars_to_consider = np.random.choice(data.shape[1], size=max_features,
-                                            replace=False)
+        vars_to_consider = randomstate.choice(data.shape[1], size=max_features,
+                                              replace=False)
 
     for cand_var in vars_to_consider:
         uniquelist = np.unique(data[:, cand_var])
@@ -124,8 +125,7 @@ class _DecisionNode:
 def _create_decision_node(data, labels, min_obs_split=2, max_depth=np.inf,
                           objfunc=metrics.gini, max_features=None, seed=None):
 
-    if seed is not None:
-        np.random.seed(seed)
+    random = check_random_state(seed)
 
     prop = np.mean(labels)
     majority = int(np.round(prop))
@@ -137,8 +137,8 @@ def _create_decision_node(data, labels, min_obs_split=2, max_depth=np.inf,
         return _DecisionNode(majority=majority)
 
     # Find best split
-    split = _choose_split(data, labels, objfunc,
-                          max_features=max_features)
+    split = _choose_split(data, labels, objfunc, max_features=max_features,
+                          randomstate=random)
     cond = data[:, split[0]] < split[1]
 
     # Build recursively defined tree
@@ -148,12 +148,12 @@ def _create_decision_node(data, labels, min_obs_split=2, max_depth=np.inf,
             _create_decision_node(
                 data[cond], labels[cond],
                 min_obs_split, max_depth-1, objfunc=objfunc,
-                max_features=max_features
+                max_features=max_features, seed=random
             ),
             _create_decision_node(
                 data[np.logical_not(cond)], labels[np.logical_not(cond)],
                 min_obs_split, max_depth-1, objfunc=objfunc,
-                max_features=max_features
+                max_features=max_features, seed=random
             )
         ]
     )
@@ -270,9 +270,6 @@ class DecisionTree:
                   self.max_features <= 0):
                 raise ValueError('max_features={} is an invalid '
                                  'value.'.format(self.max_features))
-
-            if self.seed is not None:
-                np.random.seed(self.seed)
 
         self.tree = _create_decision_node(X, Y, **self.params)
         self._train_err = self.test_err(X, Y)

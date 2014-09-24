@@ -6,6 +6,7 @@ import sys
 import numpy as np
 
 from .base import EnsembleBinaryClassifier
+from ..helpers import check_random_state
 
 __all__ = ('BaggingBinaryClassifier',)
 
@@ -23,8 +24,8 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
         (default {}).
     n_models_fit : int, optional
         Number of bagging estimators to fit (default 10).
-    seed : int, optional
-        If provided, seeds the random number generator (default 10).
+    seed : int or RandomState, optional
+        If provided, seeds the random number generator (default None).
     '''
     _bag_params_names = ('model_params', 'n_models_fit', 'seed')
 
@@ -37,7 +38,9 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
             model_params = {}
         self.model_params = model_params
         self.n_models_fit = n_models_fit
+
         self.seed = seed
+        self._random = check_random_state(seed)
 
         self.obs_used = []
         self._oob_error = None
@@ -72,8 +75,6 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
         verbose : bool, optional
             Print status during estimation.
         '''
-        if self.seed is not None:
-            np.random.seed(self.seed)
         if fit_params is None:
             fit_params = {}
 
@@ -81,7 +82,7 @@ class BaggingBinaryClassifier(EnsembleBinaryClassifier):
         oob_votes_num = np.zeros(len(Y))
         oob_votes_for = np.zeros(len(Y))
         for i in range(self.n_models_fit):
-            curr_ind = np.random.choice(num_obs, num_obs)
+            curr_ind = self._random.choice(num_obs, num_obs)
             curr_X = X[curr_ind]
             curr_Y = Y[curr_ind]
 
