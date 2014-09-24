@@ -1,4 +1,5 @@
 import numpy as np
+from nose.tools import raises
 
 import simpleml.helpers as helpers
 
@@ -21,3 +22,23 @@ class TestNPPrintOptions:
 
         print(res)
         assert res == '[ 1.23  2.20]'
+
+
+class TestCheckRandomState:
+    def test_none(self):
+        state = helpers.check_random_state(None)
+        assert isinstance(state, np.random.RandomState)
+
+    def test_int(self):
+        state = helpers.check_random_state(5435)
+        assert isinstance(state, np.random.RandomState)
+
+    def test_state(self):
+        orig_state = np.random.RandomState()
+        state = helpers.check_random_state(orig_state)
+        assert isinstance(state, np.random.RandomState)
+        assert state is orig_state
+
+    @raises(ValueError)
+    def test_invalid(self):
+        helpers.check_random_state(4.35)
