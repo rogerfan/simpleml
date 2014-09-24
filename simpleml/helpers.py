@@ -55,7 +55,7 @@ def np_print_options(strip_zeros=True, **kwargs):
 
 def check_random_state(seed):
     if seed is None:
-        return np.random.RandomState()
+        return np.random.mtrand._rand
     elif isinstance(seed, int):
         return np.random.RandomState(seed)
     elif isinstance(seed, np.random.RandomState):
