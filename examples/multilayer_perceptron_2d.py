@@ -10,7 +10,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 # %cd C:/Users/g1rxf01/Downloads/New folder/simpleml/examples
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
-from simpleml.perceptron import MultilayerPerceptron
+from simpleml.neural import MultilayerPerceptron
 
 
 # Sample random data

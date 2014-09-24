@@ -5,8 +5,8 @@ from copy import deepcopy
 
 import numpy as np
 
-from . import metrics
-from .helpers import np_print_options
+from .. import metrics
+from ..helpers import np_print_options
 
 __all__ = ('MultilayerPerceptron',)
 

@@ -13,7 +13,7 @@ from matplotlib import cm
 # %cd M:/Libraries/Documents/Code/Python/simpleml/examples
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
-from simpleml.perceptron import MultilayerPerceptron
+from simpleml.neural import MultilayerPerceptron
 from simpleml.transform import to_dummies
 
 

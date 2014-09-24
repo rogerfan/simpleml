@@ -1,7 +1,7 @@
 import numpy as np
 from nose.tools import raises
 
-from simpleml.perceptron import MultilayerPerceptron
+from simpleml.neural import MultilayerPerceptron
 import simpleml.metrics as metrics
 from simpleml.transform import to_dummies
 from .test_dectree import X_TRAIN, LABELS_TRAIN
