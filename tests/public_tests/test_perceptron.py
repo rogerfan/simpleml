@@ -110,6 +110,27 @@ class TestMLPFit:
         mlp.fit(x, LABELS_TRAIN, epochnum=5, add_constant=False)
         mlp.classify(x, add_constant=False)
 
+    def test_prob_1d(self):
+        mlp = MultilayerPerceptron(
+            num_inputs=4, num_hidden_layers=1, num_hidden_nodes=3)
+        mlp.fit(X_TRAIN, LABELS_TRAIN, epochnum=5)
+
+        pred_prob = mlp.predict_prob(X_TRAIN)
+        assert np.all(np.logical_and(0 <= pred_prob, pred_prob <= 1))
+
+    def test_prob_2d(self):
+        x = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+        y = np.array([[0, 1], [1, 0], [0, 1], [1, 0]])
+
+        mlp = MultilayerPerceptron(
+            num_inputs=3, num_outputs=2,
+            num_hidden_layers=1)
+        mlp.fit(x, y, epochnum=5)
+
+        pred_prob = mlp.predict_prob(x)
+        assert np.all(np.logical_and(0 <= pred_prob, pred_prob <= 1))
+        assert np.allclose(np.sum(pred_prob, axis=1), 1)
+
 
 class TestMLPSeed:
     params = {'num_inputs':4, 'num_hidden_layers':1, 'num_hidden_nodes':3}

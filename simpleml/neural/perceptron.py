@@ -271,7 +271,7 @@ class MultilayerPerceptron:
 
         return self
 
-    def predict_prob(self, X, add_constant=True):
+    def _predict_raw(self, X, add_constant=True):
         if add_constant:
             X = np.column_stack([np.ones(len(X)), X])
 
@@ -281,10 +281,18 @@ class MultilayerPerceptron:
 
         return pred
 
-    def classify(self, X, add_constant=True, max_ind=False):
-        prob = self.predict_prob(X, add_constant=add_constant)
-        if max_ind:
-            return np.argmax(prob, axis=1)
+    def predict_prob(self, X, add_constant=True):
+        raw = self._predict_raw(X, add_constant=add_constant)
+
+        if raw.shape[1] == 1:
+            return raw
         else:
-            return (prob > .5).astype(int)
+            return raw / np.sum(raw, axis=1)[:, np.newaxis]
+
+    def classify(self, X, add_constant=True, max_ind=False):
+        raw = self._predict_raw(X, add_constant=add_constant)
+        if max_ind:
+            return np.argmax(raw, axis=1)
+        else:
+            return (raw > .5).astype(int)
 
