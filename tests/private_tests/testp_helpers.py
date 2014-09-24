@@ -4,7 +4,6 @@ import simpleml.helpers as helpers
 
 
 class TestNPPrintOptions:
-
     def test_print(self):
         with helpers.np_print_options(precision=2):
             print(np.array([1.234234, 2.200003]))

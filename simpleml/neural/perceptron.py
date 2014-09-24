@@ -6,7 +6,7 @@ from copy import deepcopy
 import numpy as np
 
 from .. import metrics
-from ..helpers import np_print_options
+from ..helpers import np_print_options, check_random_state
 
 __all__ = ('MultilayerPerceptron',)
 
@@ -21,7 +21,10 @@ def _quadratic(i):
 
 class _Layer:
     def __init__(self, num_inputs, num_nodes, parent=None, bias=True,
-                 sigmoid=metrics.logistic, weight_init_range=.5):
+                 sigmoid=metrics.logistic, weight_init_range=.5,
+                 seed=None):
+        random = check_random_state(seed)
+
         self.num_nodes = num_nodes
         self.num_inputs = num_inputs
         self.sigmoid = sigmoid
@@ -40,8 +43,8 @@ class _Layer:
         self._activation_scores = np.zeros(num_nodes_nobias)
         self.activations = np.zeros(num_nodes)
         if bias: self.activations[0] = 1
-        self.weights = np.random.uniform(-weight_init_range, weight_init_range,
-                                         size=(num_inputs, num_nodes_nobias))
+        self.weights = random.uniform(-weight_init_range, weight_init_range,
+                                      size=(num_inputs, num_nodes_nobias))
         self._last_change = np.zeros((num_inputs, num_nodes_nobias))
         self._deltas = np.zeros(num_nodes_nobias)
 
@@ -149,15 +152,16 @@ class MultilayerPerceptron:
                  num_hidden_layers=1, num_hidden_nodes=3,
                  learn_rate=.5, learn_rate_evol='linear', momentum=.1,
                  seed=None, sigmoid=metrics.logistic, weight_init_range=.5):
-
-        self._fit_once = False
+        self.epochs_estimated = 0
         self.num_inputs = num_inputs
         self.num_outputs = num_outputs
         self.learn_rate = learn_rate
         self.momentum = momentum
-        self.seed = seed
         self.sigmoid = sigmoid
         self.weight_init_range = weight_init_range
+
+        self.seed = seed
+        self._random = check_random_state(seed)
 
         if callable(learn_rate_evol):
             self.learn_rate_evol = learn_rate_evol
@@ -184,7 +188,8 @@ class MultilayerPerceptron:
             )
         self.num_hidden_nodes = num_hidden_nodes
 
-        lpars = {'sigmoid': sigmoid, 'weight_init_range': weight_init_range}
+        lpars = {'sigmoid': sigmoid, 'weight_init_range': weight_init_range,
+                 'seed':self._random}
 
         self.layers = []
         self.layers.append(_Layer(num_inputs, num_hidden_nodes[0],
@@ -192,8 +197,8 @@ class MultilayerPerceptron:
         for num_inp, num_nodes in zip(num_hidden_nodes[:-1],
                                       num_hidden_nodes[1:]):
             self.layers.append(
-                _Layer(num_inp, num_nodes,
-                       parent=self.layers[-1], bias=True, **lpars)
+                _Layer(num_inp, num_nodes, parent=self.layers[-1],
+                       bias=True, **lpars)
             )
         self.layers.append(_Layer(num_hidden_nodes[-1], num_outputs, bias=False,
                                   parent=self.layers[-1], **lpars))
@@ -241,11 +246,6 @@ class MultilayerPerceptron:
             Print status during estimation. If an int is provided, prints
             status every verbose epochs.
         '''
-        if verbose is True:
-            verbose = 50
-        if not self._fit_once and self.seed is not None:
-            np.random.seed(self.seed)
-
         num_obs = len(X)
         if Y.ndim == 1:
             Y = np.reshape(Y, (-1, 1))
@@ -253,24 +253,26 @@ class MultilayerPerceptron:
             X = np.column_stack([np.ones(num_obs), X])
 
         for i in range(epochnum):
-            order = np.random.choice(num_obs, size=num_obs, replace=False)
+            order = self._random.choice(num_obs, size=num_obs, replace=False)
             for ind in order:
                 error = 0.
 
                 targets = Y[ind]
                 inputs = X[ind]
+                curr_learn_rate = (self.learn_rate_evol(self.epochs_estimated)*
+                                   self.learn_rate)
 
                 pred = self.layers[0].update_activations(inputs)
                 self.layers[-1].backpropogate(
                     inputs, targets-pred,
-                    self.learn_rate_evol(i)*self.learn_rate, self.momentum
+                    curr_learn_rate, self.momentum
                 )
 
                 error += np.mean(np.abs(targets - pred))
+            self.epochs_estimated += 1
             if verbose and (i % verbose) == (verbose-1):
                 print('{:>4}, error: {:.3e}'.format(i+1, error/num_obs))
 
-        self._fit_once = True
         return self
 
     def predict_prob(self, X, add_constant=True):

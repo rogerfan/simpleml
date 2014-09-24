@@ -52,3 +52,13 @@ def np_print_options(strip_zeros=True, **kwargs):
     yield
     np.set_printoptions(**original)
     arrayprint.FloatFormat.__call__ = origcall
+
+def check_random_state(seed):
+    if seed is None:
+        return np.random.RandomState()
+    elif isinstance(seed, int):
+        return np.random.RandomState(seed)
+    elif isinstance(seed, np.random.RandomState):
+        return seed
+    else:
+        raise ValueError('Invalid random seed: {}.'.format(seed))

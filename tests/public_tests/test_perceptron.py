@@ -7,6 +7,12 @@ from simpleml.transform import to_dummies
 from .test_dectree import X_TRAIN, LABELS_TRAIN
 
 
+def check_mlp_same_est(mlp0, mlp1):
+    for l0, l1 in zip(mlp0.layers, mlp1.layers):
+        assert np.allclose(l0.weights, l1.weights)
+        assert np.allclose(l0.activations, l1.activations)
+
+
 def create_learn_rate_funcs_gen(testcases):
     def test_values(case):
         mlp = MultilayerPerceptron(learn_rate_evol=case[0])
@@ -59,16 +65,15 @@ class TestMLPBasics:
         print(mlp)
 
     def test_copy(self):
-        mlp = MultilayerPerceptron()
-        mlp2 = mlp.copy()
+        mlp0 = MultilayerPerceptron()
+        mlp1 = mlp0.copy()
 
-        assert mlp.params == mlp2.params
-        for l1, l2 in zip(mlp.layers, mlp2.layers):
-            assert np.allclose(l1.weights, l2.weights)
-            assert not np.may_share_memory(l1.weights, l2.weights)
-            assert np.allclose(l1.activations, l2.activations)
-            assert not np.may_share_memory(l1.activations, l2.activations)
-            assert l1.bias == l2.bias
+        assert mlp0.params == mlp1.params
+        check_mlp_same_est(mlp0, mlp1)
+        for l0, l1 in zip(mlp0.layers, mlp1.layers):
+            assert not np.may_share_memory(l0.weights, l1.weights)
+            assert not np.may_share_memory(l0.activations, l1.activations)
+            assert l0.bias == l1.bias
 
 class TestMLPFit:
     def test_easy(self):
@@ -105,3 +110,32 @@ class TestMLPFit:
         mlp.fit(x, LABELS_TRAIN, epochnum=5, add_constant=False)
         mlp.classify(x, add_constant=False)
 
+
+class TestMLPSeed:
+    params = {'num_inputs':4, 'num_hidden_layers':1, 'num_hidden_nodes':3}
+
+    def test_same_seed(self):
+        self.mlp0 = MultilayerPerceptron(seed=2345, **self.params)
+        self.mlp1 = MultilayerPerceptron(seed=2345, **self.params)
+        self.mlp0.fit(X_TRAIN, LABELS_TRAIN, epochnum=3)
+        self.mlp1.fit(X_TRAIN, LABELS_TRAIN, epochnum=3)
+        check_mlp_same_est(self.mlp0, self.mlp1)
+
+    def test_same_state(self):
+        self.mlp0 = MultilayerPerceptron(seed=np.random.RandomState(345),
+                                         **self.params)
+        self.mlp1 = MultilayerPerceptron(seed=np.random.RandomState(345),
+                                         **self.params)
+        self.mlp0.fit(X_TRAIN, LABELS_TRAIN, epochnum=3)
+        self.mlp1.fit(X_TRAIN, LABELS_TRAIN, epochnum=3)
+        check_mlp_same_est(self.mlp0, self.mlp1)
+
+    def test_seed_persistence(self):
+        self.mlp0 = MultilayerPerceptron(seed=2345, **self.params)
+        self.mlp1 = MultilayerPerceptron(seed=2345, **self.params)
+        self.mlp0.fit(X_TRAIN, LABELS_TRAIN, epochnum=6)
+        self.mlp1.fit(X_TRAIN, LABELS_TRAIN, epochnum=3)
+        np.random.normal(size=50)
+        self.mlp1.fit(X_TRAIN, LABELS_TRAIN, epochnum=3)
+
+        check_mlp_same_est(self.mlp0, self.mlp1)
