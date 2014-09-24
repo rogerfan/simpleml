@@ -7,6 +7,32 @@ from simpleml.transform import to_dummies
 from .test_dectree import X_TRAIN, LABELS_TRAIN
 
 
+def create_learn_rate_funcs_gen(testcases):
+    def test_values(case):
+        mlp = MultilayerPerceptron(learn_rate_evol=case[0])
+        for arg, out in case[1]:
+            assert np.isclose(mlp.learn_rate_evol(arg), out)
+
+    def test_learn_rates(self):
+        for case in testcases:
+            yield test_values, case
+
+    return test_learn_rates
+
+class TestMLPLearnRate:
+    cases = [
+        ('constant', [(0, 1.), (1, 1.), (2, 1.)]),
+        ('linear', [(0, 1.), (1, 1/2), (2, 1/3)]),
+        ('quadratic', [(0, 1.), (1, 1/4), (2, 1/9)]),
+        (lambda a: 1 / (a+1)**3, [(0, 1.), (1, 1/8), (2, 1/27)]),
+    ]
+
+    test_learn_rates = create_learn_rate_funcs_gen(cases)
+
+    @raises(ValueError)
+    def test_not_recognized(self):
+        MultilayerPerceptron(learn_rate_evol='unrecognized')
+
 class TestMLPBasics:
     def test_params(self):
         param_dict = {
