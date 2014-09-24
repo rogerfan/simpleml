@@ -21,10 +21,10 @@ def create_learn_rate_funcs_gen(testcases):
 
 class TestMLPLearnRate:
     cases = [
-        ('constant', [(0, 1.), (1, 1.), (2, 1.)]),
-        ('linear', [(0, 1.), (1, 1/2), (2, 1/3)]),
-        ('quadratic', [(0, 1.), (1, 1/4), (2, 1/9)]),
-        (lambda a: 1 / (a+1)**3, [(0, 1.), (1, 1/8), (2, 1/27)]),
+        ('constant', [(0, 1.), (1, 1.), (2, 1.), (9, 1.)]),
+        ('linear', [(0, 1.), (1, 1/2), (2, 1/3), (9, 1/10)]),
+        ('quadratic', [(0, 1.), (1, 1/4), (2, 1/9), (9, 1/100)]),
+        (lambda a: 1 / (a+1)**3, [(0, 1.), (1, 1/8), (2, 1/27), (9, 1/1000)]),
     ]
 
     test_learn_rates = create_learn_rate_funcs_gen(cases)
