@@ -79,18 +79,14 @@ class _Layer:
 
         return self.activations
 
-    def backpropogate(self, system_inputs, errors, learn_rate, momentum,
-                      rhohat=None, beta=0, rho=.05):
+    def backpropogate(self, system_inputs, errors, learn_rate, momentum):
         if self.parent is None:
             inputs = system_inputs
         else:
             inputs = self.parent.activations
 
-        if self.bias and rhohat is None:
+        if self.bias:
             self._deltas = self.sigmoid.d(self._activation_scores)*errors[1:]
-        elif self.bias and rhohat is not None:
-            errors_p = errors[1:]
-            self._deltas = self.sigmoid.d(self._activation_scores)*errors_p
         else:
             self._deltas = self.sigmoid.d(self._activation_scores)*errors
 
