@@ -39,15 +39,16 @@ class AutoEncoder(MultilayerPerceptron):
         raise AttributeError(
             "'AutoEncoder' object has no attribute 'classify'")
 
-    def fit(self, X, epochnum=100, add_constant=True, verbose=False):
-        super().fit(X, X, epochnum=epochnum, add_constant=add_constant,
+    def fit(self, X, epochnum=100, verbose=False):
+        super().fit(X, X, epochnum=epochnum, add_constant=True,
                     verbose=verbose)
 
         return self
 
     def project(self, X):
-        pass
+        return self._predict_raw(X, add_constant=True)
 
     def transform(self, X):
-        pass
+        self._predict_raw(X, add_constant=True)
+        return self.layers[0].activations[:, 1:]
 
