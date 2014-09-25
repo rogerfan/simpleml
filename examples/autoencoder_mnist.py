@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
-%cd C:/Users/g1rxf01/Downloads/New folder/simpleml/examples
+# %cd C:/Users/g1rxf01/Downloads/New folder/simpleml/examples
 # %cd M:/Libraries/Documents/Code/Python/simpleml/examples
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
