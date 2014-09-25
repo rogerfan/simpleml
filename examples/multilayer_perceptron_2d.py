@@ -45,7 +45,7 @@ x_flatmesh = np.column_stack([x0.ravel(), x1.ravel()])
 # Setup estimator
 mlp = MultilayerPerceptron(
     num_inputs=3, num_outputs=1, num_hidden_layers=1, num_hidden_nodes=6,
-    learn_rate=.5, learn_rate_evol='linear', momentum=.1, seed=23456
+    learn_rate=1, learn_rate_evol='sqrt', momentum=.1, seed=23456
 )
 
 # Estimate and plot

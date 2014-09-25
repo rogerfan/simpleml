@@ -13,6 +13,8 @@ __all__ = ('MultilayerPerceptron',)
 
 def _constant(i):
     return 1
+def _sqrt(i):
+    return 1 / (i+1)**.5
 def _linear(i):
     return 1/(i+1)
 def _quadratic(i):
@@ -77,14 +79,18 @@ class _Layer:
 
         return self.activations
 
-    def backpropogate(self, system_inputs, errors, learn_rate, momentum):
+    def backpropogate(self, system_inputs, errors, learn_rate, momentum,
+                      rhohat=None, beta=0, rho=.05):
         if self.parent is None:
             inputs = system_inputs
         else:
             inputs = self.parent.activations
 
-        if self.bias:
+        if self.bias and rhohat is None:
             self._deltas = self.sigmoid.d(self._activation_scores)*errors[1:]
+        elif self.bias and rhohat is not None:
+            errors_p = errors[1:]
+            self._deltas = self.sigmoid.d(self._activation_scores)*errors_p
         else:
             self._deltas = self.sigmoid.d(self._activation_scores)*errors
 
@@ -117,7 +123,7 @@ class MultilayerPerceptron:
         ordered from input to output (default 3).
     learn_rate : float, optional
         Learning rate for training (default 0.5).
-    learn_rate_evol : function or {'constant', 'linear', 'quadratic'}
+    learn_rate_evol : function or {constant', 'sqrt', linear', 'quadratic'}
         Learning rate evolution function that is multiplied by learn_rate.
         Should be a single-input function that is defined for non-negative
         integers, returns values between 0 and 1, and is weakly decreasing
@@ -158,6 +164,8 @@ class MultilayerPerceptron:
             self.learn_rate_evol = learn_rate_evol
         elif learn_rate_evol == 'constant':
             self.learn_rate_evol = _constant
+        elif learn_rate_evol == 'sqrt':
+            self.learn_rate_evol = _sqrt
         elif learn_rate_evol == 'linear':
             self.learn_rate_evol = _linear
         elif learn_rate_evol == 'quadratic':
