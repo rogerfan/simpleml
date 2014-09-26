@@ -46,7 +46,7 @@ class TestMLPBasics:
             'num_inputs': 4, 'num_outputs': 2,
             'num_hidden_layers': 2, 'num_hidden_nodes': [2, 3],
             'learn_rate': .4, 'momentum': .2, 'seed': 24545,
-            'sigmoid': metrics.tanh, 'weight_init_range': .2
+            'sigmoid': metrics.tanh
         }
 
         mlp = MultilayerPerceptron(**param_dict)
