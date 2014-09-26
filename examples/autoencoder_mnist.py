@@ -26,7 +26,7 @@ ae = AutoEncoder(
     num_inputs=data['train'][0].shape[1],
     num_comp=num_comp,
     learn_rate=.5, momentum=.1, seed=23456,
-    sparse=True, sparsity_weight=.5
+    sparse=True, sparsity_target=.01, sparsity_weight=3
 )
 
 # Estimate autoencoder

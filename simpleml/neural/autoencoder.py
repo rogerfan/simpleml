@@ -50,33 +50,31 @@ class AutoEncoder(MultilayerPerceptron):
 
         return self
 
-    # def _activate_backpropogate(self, X, Y, ind, curr_learn_rate):
-    #     targets = Y[ind]
-    #     inputs = X[ind]
+    def _activate_backpropogate(self, X, Y, ind, curr_learn_rate):
+        targets = Y[ind]
+        inputs = X[ind]
 
-    #     # Calculate sparsity penalty
-    #     if self.sparse:
-    #         self.layers[0].update_activations(X)
-    #         rhohat = np.mean(self.layers[0].activations, axis=0)
-    #         penalty = (self.sparsity_weight * (
-    #             -(self.sparsity_target / rhohat)  +
-    #             (1 - self.sparsity_target) / (1 - rhohat)
-    #         ))
-    #     else:
-    #         penalty = 0
+        # Calculate sparsity penalty
+        if self.sparse:
+            self.layers[0].update_activations(X)
+            rhohat = np.mean(self.layers[0].activations, axis=0)
+            penalty = (self.sparsity_weight * (
+                -(self.sparsity_target / rhohat)  +
+                (1 - self.sparsity_target) / (1 - rhohat)
+            ))
+        else:
+            penalty = 0
 
-    #     # Update activations
-    #     pred = self._activate(inputs)
+        # Update activations
+        pred = self._activate(inputs)
 
-    #     # Backpropogate errors
-    #     errors = self.layers[1].backpropogate(inputs, targets - pred,
-    #                                           curr_learn_rate, self.momentum)
-    #     # self.layers[0].backpropogate(inputs, errors - penalty, curr_learn_rate,
-    #     #                              self.momentum)
-    #     self.layers[0].backpropogate(inputs, errors, curr_learn_rate,
-    #                                  self.momentum)
+        # Backpropogate errors
+        errors = self.layers[1].backpropogate(inputs, targets - pred,
+                                              curr_learn_rate, self.momentum)
+        self.layers[0].backpropogate(inputs, errors - penalty, curr_learn_rate,
+                                     self.momentum)
 
-    #     return targets - pred
+        return targets - pred
 
 
     def project(self, X):
