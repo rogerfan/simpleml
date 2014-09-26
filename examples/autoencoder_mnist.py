@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
-# %cd C:/Users/g1rxf01/Downloads/New folder/simpleml/examples
+%cd C:/Users/g1rxf01/Downloads/New folder/simpleml/examples
 # %cd M:/Libraries/Documents/Code/Python/simpleml/examples
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
@@ -21,16 +21,17 @@ with gzip.open('../data/mnist.gz', 'rb') as f:
 
 
 # Setup autoencoder
-num_comp = 25
+num_comp = 225
 ae = AutoEncoder(
     num_inputs=data['train'][0].shape[1],
     num_comp=num_comp,
-    learn_rate=.5, momentum=.1, seed=23456
+    learn_rate=.5, momentum=.1, seed=23456,
+    sparse=True, sparsity_weight=.5
 )
 
 # Estimate autoencoder
 start = time.perf_counter()
-ae.fit(data['train'][0], epochnum=5, verbose=1)
+ae.fit(data['train'][0][:5000], epochnum=1, verbose=1)
 print("Time: {:5.2f}".format(time.perf_counter() - start))
 
 # Visualize the encodings
