@@ -30,7 +30,7 @@ ae = AutoEncoder(
 
 # Estimate autoencoder
 start = time.perf_counter()
-ae.fit(data['train'][0], epochnum=5, verbose=1)
+ae.fit(data['train'][0], epochnum=1, verbose=1)
 print("Time: {:5.2f}".format(time.perf_counter() - start))
 
 # Visualize the encodings
