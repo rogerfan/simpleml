@@ -219,6 +219,7 @@ class MultilayerPerceptron:
         result.layers = deepcopy(self.layers)
         return result
 
+
     def fit(self, X, Y, epochnum=100, add_constant=True, verbose=False):
         '''
         Fit the multilayer perceptron using training data.
@@ -252,28 +253,36 @@ class MultilayerPerceptron:
             for ind in order:
                 error = 0.
 
-                targets = Y[ind]
-                inputs = X[ind]
                 curr_learn_rate = (self.learn_rate_evol(self.epochs_estimated)*
                                    self.learn_rate)
 
-                # Update activations
-                pred = inputs
-                for l in self.layers:
-                    pred = l.update_activations(pred)
+                curr_err = self._activate_backpropogate(
+                    X, Y, ind, curr_learn_rate)
 
-                # Backpropogate errors
-                errors = targets - pred
-                for l in reversed(self.layers):
-                    errors = l.backpropogate(inputs, errors, curr_learn_rate,
-                                             self.momentum)
-
-                error += np.mean(np.abs(targets - pred))
+                error += np.mean(np.abs(curr_err))
             self.epochs_estimated += 1
             if verbose and (i % verbose) == (verbose-1):
                 print('{:>4}, error: {:.3e}'.format(i+1, error/num_obs))
 
         return self
+
+    def _activate_backpropogate(self, X, Y, ind, curr_learn_rate):
+        targets = Y[ind]
+        inputs = X[ind]
+
+        # Update activations
+        pred = inputs
+        for l in self.layers:
+            pred = l.update_activations(pred)
+
+        # Backpropogate errors
+        errors = targets - pred
+        for l in reversed(self.layers):
+            errors = l.backpropogate(inputs, errors, curr_learn_rate,
+                                     self.momentum)
+
+        return targets - pred
+
 
     def _predict_raw(self, X, add_constant=True):
         if add_constant:
