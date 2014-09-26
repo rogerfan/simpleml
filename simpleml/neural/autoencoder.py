@@ -15,18 +15,19 @@ class AutoEncoder(MultilayerPerceptron):
     '''
     params_names = (
         'num_inputs', 'num_comp', 'learn_rate', 'learn_rate_evol',
-        'momentum', 'seed', 'sigmoid',
+        'momentum', 'seed', 'sigmoid', 'weight_init_range',
         'sparse', 'sparsity_target', 'sparsity_weight',
     )
     def __init__(self, num_inputs, num_comp=5,
                  learn_rate=.5, learn_rate_evol='linear', momentum=.1,
-                 seed=None, sigmoid=metrics.logistic,
+                 seed=None, sigmoid=metrics.logistic, weight_init_range=.5,
                  sparse=False, sparsity_target=.05, sparsity_weight=.2):
         super().__init__(
             num_inputs=num_inputs+1, num_outputs=num_inputs,
             num_hidden_layers=1, num_hidden_nodes=num_comp+1,
             learn_rate=learn_rate, learn_rate_evol=learn_rate_evol,
-            momentum=.1, seed=seed, sigmoid=sigmoid)
+            momentum=.1, seed=seed, sigmoid=sigmoid,
+            weight_init_range=weight_init_range)
 
         self.num_comp = num_comp
         self.sparse = sparse

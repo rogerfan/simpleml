@@ -23,7 +23,7 @@ def _quadratic(i):
 
 class _Layer:
     def __init__(self, num_inputs, num_nodes, parent=None, bias=True,
-                 sigmoid=metrics.logistic,
+                 sigmoid=metrics.logistic, weight_init_range=.5,
                  seed=None):
         random = check_random_state(seed)
 
@@ -44,15 +44,9 @@ class _Layer:
 
         self._activation_scores = np.zeros(num_nodes_nobias)
         self.activations = np.zeros(num_nodes)
-        if bias:
-            self.activations[0] = 1.
-
-        weight_init_range = np.sqrt(6 / (num_inputs+num_nodes+1))
+        if bias: self.activations[0] = 1
         self.weights = random.uniform(-weight_init_range, weight_init_range,
                                       size=(num_inputs, num_nodes_nobias))
-        if self.parent is None or self.parent.bias:
-            self.weights[0, :] = 0.
-
         self._last_change = np.zeros((num_inputs, num_nodes_nobias))
         self._deltas = np.zeros(num_nodes_nobias)
 
@@ -72,7 +66,6 @@ class _Layer:
 
     def update_activations(self, inputs):
         self._activation_scores = np.dot(inputs, self.weights)
-
         if self.bias:
             if len(inputs.shape) == 1:
                 self.activations = np.append(
@@ -138,22 +131,27 @@ class MultilayerPerceptron:
     sigmoid : object, optional
         Sigmoid function to use. Must have f and d methods for the function
         and derivative values, respectively (default metrics.logistic).
+    weight_init_range : float, optional
+        Weights are initalized from a uniform distribution between plus-minus
+        this value (default .5).
     '''
     params_names = (
         'num_inputs', 'num_outputs', 'num_hidden_layers', 'num_hidden_nodes',
         'learn_rate', 'learn_rate_evol', 'momentum', 'seed', 'sigmoid',
+        'weight_init_range'
     )
 
     def __init__(self, num_inputs=3, num_outputs=1,
                  num_hidden_layers=1, num_hidden_nodes=3,
                  learn_rate=.5, learn_rate_evol='linear', momentum=.1,
-                 seed=None, sigmoid=metrics.logistic):
+                 seed=None, sigmoid=metrics.logistic, weight_init_range=.5):
         self.epochs_estimated = 0
         self.num_inputs = num_inputs
         self.num_outputs = num_outputs
         self.learn_rate = learn_rate
         self.momentum = momentum
         self.sigmoid = sigmoid
+        self.weight_init_range = weight_init_range
 
         self.seed = seed
         self._random = check_random_state(seed)
@@ -185,7 +183,8 @@ class MultilayerPerceptron:
             )
         self.num_hidden_nodes = num_hidden_nodes
 
-        lpars = {'sigmoid': sigmoid, 'seed':self._random}
+        lpars = {'sigmoid': sigmoid, 'weight_init_range': weight_init_range,
+                 'seed':self._random}
 
         self.layers = []
         self.layers.append(_Layer(num_inputs, num_hidden_nodes[0],
@@ -289,11 +288,14 @@ class MultilayerPerceptron:
 
         return pred
 
+
     def _predict_raw(self, X, add_constant=True):
         if add_constant:
             X = np.column_stack([np.ones(len(X)), X])
 
-        pred = self._activate(X)
+        pred = X
+        for l in self.layers:
+            pred = l.update_activations(pred)
 
         return pred
 
