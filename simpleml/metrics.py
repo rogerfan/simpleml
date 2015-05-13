@@ -36,3 +36,10 @@ class logistic:
         f = self.f(x)
         return f*(1.-f)
 logistic = logistic()
+
+# Norm functions
+def norm(x, y):
+    return np.linalg.norm(x-y)
+
+def cat_noteq(a, b):
+    return int(a != b)
