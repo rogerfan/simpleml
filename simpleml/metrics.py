@@ -39,7 +39,7 @@ logistic = logistic()
 
 # Norm functions
 def norm(x, y):
-    return np.linalg.norm(x-y)
+    return np.linalg.norm(np.atleast_2d(x-y), axis=1)
 
 def cat_noteq(a, b):
     return int(a != b)
